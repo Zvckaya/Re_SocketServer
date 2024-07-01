@@ -40,7 +40,6 @@ namespace DummyClient
                 socket.Shutdown(SocketShutdown.Both);
                 socket.Close();
 
-                myClient++;
             }
             catch (Exception ex)
             {
