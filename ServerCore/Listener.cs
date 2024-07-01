@@ -11,10 +11,12 @@ namespace ServerCore
     class Listener
     {
         Socket _listenSocket;
+        Action<Socket> _onAcceptHandler;
 
-        public void Init(IPEndPoint endpoint)
+        public void Init(IPEndPoint endpoint,Action<Socket> onAcceptHandler) // onAcceptHandler는 callback 방식으로 통신성공 후 할 일을 받아옴->다른 객체에서
         {
             _listenSocket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _onAcceptHandler += onAcceptHandler;
 
             _listenSocket.Bind(endpoint);
 
@@ -28,6 +30,9 @@ namespace ServerCore
 
         void RegisterAccept(SocketAsyncEventArgs args)
         {
+            args.AcceptSocket = null;
+            // 기존 SocketAsyncEventArgs를 재사용 하고 있기 때문에 기존 내용을 초기화 시켜주어야 함.
+
             bool pending = _listenSocket.AcceptAsync(args); //만약 실행과 동시에 성공하면 소켓 비동기 이벤트를 감시함.
             //AcceptAsync는 pending 상태이면 대기하다 자동으로 실행 
             if (!pending)
@@ -39,8 +44,8 @@ namespace ServerCore
         {
             if (args.SocketError == SocketError.Success)
             {
-                //실제 접속후 할 일
-
+                //실제 accept 완료 후 할 일
+                _onAcceptHandler.Invoke(args.AcceptSocket); //애초에 성공했을때이기 때문에 무조건 acceptSocket은 존재한다.
 
             }
             else
