@@ -5,33 +5,39 @@ using System.Text;
 
 namespace ServerCore
 {
+    class GameSession : Session
+    {
+        public override void OnConnected(EndPoint endPoint)
+        {
+            Console.WriteLine($"[OnConnected]:{endPoint.ToString()}");
+            byte[] sendBuff = Encoding.UTF8.GetBytes("Welcome to Server!"); // string을 utf8 byte로 변환
+            Send(sendBuff);
+            Thread.Sleep(500);
+            Disconnect();
+        }
+
+        public override void OnDisconnected(EndPoint endPoint)
+        {
+            Console.WriteLine($"[Disconnect] {endPoint.ToString()}");
+        }
+
+        public override void OnRecv(ArraySegment<byte> buffer)
+        {
+            string recvData = Encoding.UTF8.GetString(buffer.Array, buffer.Offset, buffer.Count);
+            Console.WriteLine($"[From Client] {recvData}");
+        }
+
+        public override void OnSend(int numOfByte)
+        {
+            Console.WriteLine($"Transferred bytes:{numOfByte}");
+
+        }
+    }
+
     class Program
     {
         static Listener _listenr = new Listener();
-        static void onAcceptHandler(Socket clientSocket)
-        {
-            Session session = new Session();
-            try
-            {
-                session.Start(clientSocket);
-
-
-                //send
-                byte[] sendBuff = Encoding.UTF8.GetBytes("Welcome to Server!"); // string을 utf8 byte로 변환
-                session.Send(sendBuff);
-
-                Thread.Sleep(500);
-
-                session.Disconnect();
-                session.Disconnect();
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-        }
-
+      
         static void Main(string[] args)
         {
             //DNS Domain Name System 사용 
@@ -42,7 +48,7 @@ namespace ServerCore
 
 
 
-            _listenr.Init(endPoint, onAcceptHandler);
+            _listenr.Init(endPoint,() => { return new GameSession(); });
             Console.WriteLine("Listening");
 
             while (true)

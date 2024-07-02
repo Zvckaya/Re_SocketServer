@@ -11,12 +11,12 @@ namespace ServerCore
     class Listener
     {
         Socket _listenSocket;
-        Action<Socket> _onAcceptHandler;
+        Func<Session> _sessionFactory;
 
-        public void Init(IPEndPoint endpoint,Action<Socket> onAcceptHandler) // onAcceptHandler는 callback 방식으로 통신성공 후 할 일을 받아옴->다른 객체에서
+        public void Init(IPEndPoint endpoint, Func<Session> sessionFactory) // onAcceptHandler는 callback 방식으로 통신성공 후 할 일을 받아옴->다른 객체에서
         {
             _listenSocket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            _onAcceptHandler += onAcceptHandler;
+            _sessionFactory += sessionFactory;
 
             _listenSocket.Bind(endpoint);
 
@@ -48,8 +48,9 @@ namespace ServerCore
         {
             if (args.SocketError == SocketError.Success)
             {
-                //실제 accept 완료 후 할 일
-                _onAcceptHandler.Invoke(args.AcceptSocket); //애초에 성공했을때이기 때문에 무조건 acceptSocket은 존재한다.
+                Session session = _sessionFactory.Invoke();
+                session.Start(args.AcceptSocket); //만약 여기서 클라가 접속을 종료하면 OnConnected를 실행하면 튕긴다.
+                session.OnConnected(args.AcceptSocket.RemoteEndPoint); 
 
             }
             else

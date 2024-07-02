@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ServerCore
 {
-    class Session
+    public abstract class Session
     {
         Socket _socket;
         int _disconnected = 0;
@@ -19,6 +20,12 @@ namespace ServerCore
         SocketAsyncEventArgs sendArgs;
         SocketAsyncEventArgs recvArgs;
         List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
+
+        public abstract void OnConnected(EndPoint endPoint);
+        public abstract void OnRecv(ArraySegment<byte> buffer);
+        public abstract void OnSend(int numOfByte);
+        public abstract void OnDisconnected(EndPoint endPoint);
+
 
         public void Start(Socket socket)
         {
@@ -50,6 +57,7 @@ namespace ServerCore
             if (Interlocked.Exchange(ref _disconnected, 1) == 1) // Interlocked.Exchange 은 교환전의 숫자를 밷어줌 
                 return;
 
+            OnDisconnected(_socket.RemoteEndPoint);
             _socket.Shutdown(SocketShutdown.Both);
             _socket.Close();
         }
@@ -84,8 +92,7 @@ namespace ServerCore
                     {
                         sendArgs.BufferList = null;
                         _pendingList.Clear(); //대기 목록을 초기화함 
-
-                        Console.WriteLine($"Transferred bytes:{sendArgs.BytesTransferred}");
+                        OnSend(args.BytesTransferred); 
 
                         if (_sendQueue.Count != 0) //검사를 해야하는 이유->pending이 걸려있는 상태에서 단순 데이터 삽입만 될 수 있기 때문
                             RegisterSend();  // pendingList.Clear를 했다
@@ -120,8 +127,8 @@ namespace ServerCore
             {
                 try
                 {
-                    string recvData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
-                    Console.WriteLine($"[From Client] {recvData}");
+                    OnRecv(new ArraySegment<byte>(args.Buffer, args.Offset, args.BytesTransferred));
+                   
                     RegisterRecv(); //재사용을 위한 재등록 
                 }
                 catch (Exception ex)
