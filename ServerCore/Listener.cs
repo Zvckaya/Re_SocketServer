@@ -20,8 +20,12 @@ namespace ServerCore
 
             _listenSocket.Bind(endpoint);
 
+
+            //backlog - 최대 대기 수 
             _listenSocket.Listen(10);
 
+
+            //아래의 SocketAsyncEventArgs를 늘리면 처리할 수 있는 이벤트가 늘어남
             SocketAsyncEventArgs e = new SocketAsyncEventArgs();
             e.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted); // 소켓 비동기 이벤트가 완료되면 즉 accept 되면 
             RegisterAccept(e);  //맨 최초로 acceptasync에 대한 control flow를 등록해준다. 
@@ -35,7 +39,7 @@ namespace ServerCore
 
             bool pending = _listenSocket.AcceptAsync(args); //만약 실행과 동시에 성공하면 소켓 비동기 이벤트를 감시함.
             //AcceptAsync는 pending 상태이면 대기하다 자동으로 실행 
-            if (!pending)
+            if (!pending)  //fasle 즉, 대기 상태가 아니면 
                 OnAcceptCompleted(null,args);
 
         }

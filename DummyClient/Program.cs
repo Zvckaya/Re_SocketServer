@@ -26,14 +26,13 @@ namespace DummyClient
                     socket.Connect(endPoint);// listen socket의 주소가 있어야함 
                     Console.WriteLine($"Connected to {socket.RemoteEndPoint.ToString()}"); //
 
-                    byte[] sendBuff = Encoding.UTF8.GetBytes("Hello World");
-                    //for(int i =0; i < sendBuff.Length; i++) { 
-                    //    Console.Write(sendBuff[i]);
-                    //}
-                    //Console.WriteLine( );
+                    for(int i = 0; i < 5; i++)
+                    {
+                        byte[] sendBuff = Encoding.UTF8.GetBytes($"Hello World! {i}");
+                        int sendByte = socket.Send(sendBuff);
+                    }
 
-                    int sendByte = socket.Send(sendBuff);
-
+                   
                     byte[] recvBuff = new byte[1024];
                     int recvByte = socket.Receive(recvBuff);
                     string recvData = Encoding.UTF8.GetString(recvBuff, 0, recvByte);

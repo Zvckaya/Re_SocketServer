@@ -10,21 +10,21 @@ namespace ServerCore
         static Listener _listenr = new Listener();
         static void onAcceptHandler(Socket clientSocket)
         {
+            Session session = new Session();
             try
             {
-                //recv
-                byte[] recvBuff = new byte[1024];
-                int recvBytes = clientSocket.Receive(recvBuff); // 몇바이트를 받았는가?
-                string recvData = Encoding.UTF8.GetString(recvBuff, 0, recvBytes); // recvbuff에 받은 recvbyte를 인코딩 
-                Console.WriteLine($"[From Client] {recvData}");
+                session.Start(clientSocket);
+
 
                 //send
                 byte[] sendBuff = Encoding.UTF8.GetBytes("Welcome to Server!"); // string을 utf8 byte로 변환
-                clientSocket.Send(sendBuff);
+                session.Send(sendBuff);
 
-                //end
-                clientSocket.Shutdown(SocketShutdown.Both);
-                clientSocket.Close();
+                Thread.Sleep(500);
+
+                session.Disconnect();
+                session.Disconnect();
+
             }
             catch (Exception e)
             {
@@ -43,17 +43,12 @@ namespace ServerCore
 
 
             _listenr.Init(endPoint, onAcceptHandler);
-            Console.WriteLine("Listening"); 
+            Console.WriteLine("Listening");
 
             while (true)
-                {
-                   
-
-
-                }
- 
-
-            
+            {
+                ;
+            }
         }
     }
 
