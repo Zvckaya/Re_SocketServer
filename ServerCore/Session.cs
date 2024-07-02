@@ -14,10 +14,12 @@ namespace ServerCore
 
         object _lock = new object();
         Queue<byte[]> _sendQueue = new Queue<byte[]>();
-        bool _pending = false; 
+
 
         SocketAsyncEventArgs sendArgs;
         SocketAsyncEventArgs recvArgs;
+        List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
+
         public void Start(Socket socket)
         {
             _socket = socket; //accept한 인증된 socket
@@ -27,9 +29,9 @@ namespace ServerCore
             recvArgs.SetBuffer(new byte[1024], 0, 1024); //수신에 사용할 버퍼 등록
 
             sendArgs = new SocketAsyncEventArgs(); //수신 담당 소켓 이벤트 
-            sendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnSendCompleted);
+            sendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnSendCompleted); //콜백 메소드 등록
 
-            RegisterRecv(recvArgs); //첫 등록은 수동으로 해주어야함 
+            RegisterRecv(); //첫 등록은 수동으로 해주어야함 
         }
 
         public void Send(byte[] sendBuff) //매번 송신할때마다 비동기적으로 호출할 것인가?
@@ -37,7 +39,7 @@ namespace ServerCore
             lock (_lock) // Send를 동시 호출할 수도 있어서
             {
                 _sendQueue.Enqueue(sendBuff);
-                if (_pending == false) //만약 송신 대기가 없으면?
+                if (_pendingList.Count==0) //만약 송신 대기가 없으면?
                     RegisterSend();
             }
           
@@ -58,9 +60,14 @@ namespace ServerCore
 
         void RegisterSend()
         {
-            _pending = true; // 동시 Send 호출 방지
-            byte[] buff = _sendQueue.Dequeue();
-            sendArgs.SetBuffer(buff, 0, buff.Length);
+            //실제 보내는 리스트와 대기 리스트가 따로 존재함 
+
+            while (_sendQueue.Count > 0) // send큐가 빌떄까지
+            {
+                byte[] buff = _sendQueue.Dequeue();
+                _pendingList.Add(new ArraySegment<byte>(buff, 0, buff.Length));
+            }
+            sendArgs.BufferList = _pendingList; //대기 리스트의 목록을 실제 송신 리스트에 올림
 
             bool pending = _socket.SendAsync(sendArgs);
             if (!pending)
@@ -75,10 +82,14 @@ namespace ServerCore
                 {
                     try
                     {
+                        sendArgs.BufferList = null;
+                        _pendingList.Clear(); //대기 목록을 초기화함 
+
+                        Console.WriteLine($"Transferred bytes:{sendArgs.BytesTransferred}");
+
                         if (_sendQueue.Count != 0) //검사를 해야하는 이유->pending이 걸려있는 상태에서 단순 데이터 삽입만 될 수 있기 때문
-                            RegisterSend();
-                        else
-                            _pending = false;
+                            RegisterSend();  // pendingList.Clear를 했다
+                        
 
                         
                     }
@@ -95,12 +106,12 @@ namespace ServerCore
           
         }
 
-        void RegisterRecv(SocketAsyncEventArgs args)
+        void RegisterRecv()
         {
 
-            bool pending = _socket.ReceiveAsync(args);
+            bool pending = _socket.ReceiveAsync(recvArgs);
             if (!pending)
-                OnRecvCompleted(null, args);
+                OnRecvCompleted(null, recvArgs);
         }
 
         void OnRecvCompleted(object sender, SocketAsyncEventArgs args)
@@ -111,7 +122,7 @@ namespace ServerCore
                 {
                     string recvData = Encoding.UTF8.GetString(args.Buffer, args.Offset, args.BytesTransferred);
                     Console.WriteLine($"[From Client] {recvData}");
-                    RegisterRecv(args); //재사용을 위한 재등록 
+                    RegisterRecv(); //재사용을 위한 재등록 
                 }
                 catch (Exception ex)
                 {
