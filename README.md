@@ -1,4 +1,4 @@
-![image](https://github.com/Zvckaya/Re_SocketServer/assets/46082941/c2e91f44-c720-4b86-b55a-83bdfa4a0ea8)# 제로부터 시작하는 C# 소켓서버개발 
+# 제로부터 시작하는 C# 소켓서버개발 
 
 ### 블록vs논블록/ SocketAsyncEventArgs/ Delegate vs Action vs Func 
 https://spiny-venom-914.notion.site/7-1-42f55a059de4413fa18091ed4efd2f57?pvs=4
