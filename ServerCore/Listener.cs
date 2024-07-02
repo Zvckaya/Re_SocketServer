@@ -13,7 +13,7 @@ namespace ServerCore
         Socket _listenSocket;
         Func<Session> _sessionFactory;
 
-        public void Init(IPEndPoint endpoint, Func<Session> sessionFactory) // onAcceptHandler는 callback 방식으로 통신성공 후 할 일을 받아옴->다른 객체에서
+        public void Init(IPEndPoint endpoint, Func<Session> sessionFactory) // <Session>을 인자로 받는 Func형식 
         {
             _listenSocket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _sessionFactory += sessionFactory;

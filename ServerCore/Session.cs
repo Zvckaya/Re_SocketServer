@@ -26,6 +26,7 @@ namespace ServerCore
         public abstract void OnSend(int numOfByte);
         public abstract void OnDisconnected(EndPoint endPoint);
 
+      
 
         public void Start(Socket socket)
         {
