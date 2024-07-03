@@ -125,7 +125,7 @@ namespace ServerCore
             bool pending = _socket.ReceiveAsync(recvArgs);
             if (!pending)
                 OnRecvCompleted(null, recvArgs);
-        }
+        }   
 
         void OnRecvCompleted(object sender, SocketAsyncEventArgs args)
         {
