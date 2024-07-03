@@ -13,6 +13,8 @@ namespace ServerCore
         Socket _socket;
         int _disconnected = 0;
 
+        RecvBuffer _recvBuffer = new RecvBuffer(1024); //Recv 버퍼사용 
+
         object _lock = new object();
         Queue<byte[]> _sendQueue = new Queue<byte[]>();
 
@@ -22,11 +24,11 @@ namespace ServerCore
         List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
 
         public abstract void OnConnected(EndPoint endPoint);
-        public abstract void OnRecv(ArraySegment<byte> buffer);
+        public abstract int OnRecv(ArraySegment<byte> buffer);
         public abstract void OnSend(int numOfByte);
         public abstract void OnDisconnected(EndPoint endPoint);
 
-      
+
 
         public void Start(Socket socket)
         {
@@ -34,7 +36,7 @@ namespace ServerCore
 
             recvArgs = new SocketAsyncEventArgs(); //수신 담당 소켓 이벤트 
             recvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnRecvCompleted);
-            recvArgs.SetBuffer(new byte[1024], 0, 1024); //수신에 사용할 버퍼 등록
+
 
             sendArgs = new SocketAsyncEventArgs(); //수신 담당 소켓 이벤트 
             sendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnSendCompleted); //콜백 메소드 등록
@@ -47,10 +49,10 @@ namespace ServerCore
             lock (_lock) // Send를 동시 호출할 수도 있어서
             {
                 _sendQueue.Enqueue(sendBuff);
-                if (_pendingList.Count==0) //만약 송신 대기가 없으면?
+                if (_pendingList.Count == 0) //만약 송신 대기가 없으면?
                     RegisterSend();
             }
-          
+
         }
 
         public void Disconnect()
@@ -93,13 +95,13 @@ namespace ServerCore
                     {
                         sendArgs.BufferList = null;
                         _pendingList.Clear(); //대기 목록을 초기화함 
-                        OnSend(args.BytesTransferred); 
+                        OnSend(args.BytesTransferred);
 
                         if (_sendQueue.Count != 0) //검사를 해야하는 이유->pending이 걸려있는 상태에서 단순 데이터 삽입만 될 수 있기 때문
                             RegisterSend();  // pendingList.Clear를 했다
-                        
 
-                        
+
+
                     }
                     catch (Exception ex)
                     {
@@ -111,11 +113,14 @@ namespace ServerCore
                     Disconnect();
                 }
             }
-          
+
         }
 
         void RegisterRecv()
         {
+            _recvBuffer.Clean(); // 혹시라도 커서가 너무 뒤로 이동하는 것 방지 
+            ArraySegment<byte> segment = _recvBuffer.WriteSegment; //Recv에 사용할 segent
+            recvArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);  // 이만큼 사용가능 
 
             bool pending = _socket.ReceiveAsync(recvArgs);
             if (!pending)
@@ -128,8 +133,28 @@ namespace ServerCore
             {
                 try
                 {
-                    OnRecv(new ArraySegment<byte>(args.Buffer, args.Offset, args.BytesTransferred));
-                   
+                    //Write 커서 이동
+                    if (_recvBuffer.OnWrite(args.BytesTransferred) == false)
+                    {
+                        Disconnect();
+                        return;
+                    }
+
+                    //컨텐츠쪽으로 데이터를 넘긴 후 얼마나 처리했는지 받는다. 
+                    int processLen = OnRecv(_recvBuffer.ReadSegment);
+                    if(processLen < 0 || _recvBuffer.DataSzie < processLen)
+                    {
+                        Disconnect();
+                        return;
+                    }
+
+                    //처리를 한 Read커서 이동
+                    if (_recvBuffer.OnRead(processLen) == false)
+                    {
+                        Disconnect();
+                        return;
+                    }
+
                     RegisterRecv(); //재사용을 위한 재등록 
                 }
                 catch (Exception ex)
