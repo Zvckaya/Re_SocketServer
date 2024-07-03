@@ -16,7 +16,7 @@ namespace ServerCore
         RecvBuffer _recvBuffer = new RecvBuffer(1024); //Recv 버퍼사용 
 
         object _lock = new object();
-        Queue<byte[]> _sendQueue = new Queue<byte[]>();
+        Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
 
 
         SocketAsyncEventArgs sendArgs;
@@ -44,7 +44,7 @@ namespace ServerCore
             RegisterRecv(); //첫 등록은 수동으로 해주어야함 
         }
 
-        public void Send(byte[] sendBuff) //매번 송신할때마다 비동기적으로 호출할 것인가?
+        public void Send(ArraySegment<byte> sendBuff) //매번 송신할때마다 비동기적으로 호출할 것인가?
         {
             lock (_lock) // Send를 동시 호출할 수도 있어서
             {
@@ -75,8 +75,8 @@ namespace ServerCore
 
             while (_sendQueue.Count > 0) // send큐가 빌떄까지
             {
-                byte[] buff = _sendQueue.Dequeue();
-                _pendingList.Add(new ArraySegment<byte>(buff, 0, buff.Length));
+                ArraySegment<byte> buff = _sendQueue.Dequeue();
+                _pendingList.Add(buff);
             }
             sendArgs.BufferList = _pendingList; //대기 리스트의 목록을 실제 송신 리스트에 올림
 
@@ -99,8 +99,6 @@ namespace ServerCore
 
                         if (_sendQueue.Count != 0) //검사를 해야하는 이유->pending이 걸려있는 상태에서 단순 데이터 삽입만 될 수 있기 때문
                             RegisterSend();  // pendingList.Clear를 했다
-
-
 
                     }
                     catch (Exception ex)

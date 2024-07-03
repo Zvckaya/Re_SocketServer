@@ -19,12 +19,17 @@ namespace Server
         public override void OnConnected(EndPoint endPoint)
         {
             Console.WriteLine($"[OnConnected]:{endPoint.ToString()}");
-            Knight knight = new Knight() { hp = 100, attack = 10 };
-            byte[] sendBuff = new byte[1024];
+            Knight knight = new Knight() { hp = 100, attack = 100 };
+
             byte[] buffer =  BitConverter.GetBytes(knight.hp); // BitConvertor를 이용하여 int의 값을 4byte 배열로 변환 할수 있다 
             byte[] buffer2 = BitConverter.GetBytes(knight.attack); // 4bytez`
-            Array.Copy(buffer, 0, sendBuff, 0, buffer.Length);
-            Array.Copy(buffer2, 0, sendBuff, 4, buffer2.Length); // int byte만큼 더해줘야함 
+
+
+            ArraySegment<byte> openSegemnt = SendBufferHelper.Open(4096);
+            Array.Copy(buffer, 0, openSegemnt.Array, openSegemnt.Offset, buffer.Length);
+            Array.Copy(buffer2, 0, openSegemnt.Array, openSegemnt.Offset+ buffer.Length, buffer2.Length); // int byte만큼 더해줘야함 
+            ArraySegment<byte> sendBuff = SendBufferHelper.Close(buffer.Length + buffer2.Length);
+
 
             Send(sendBuff);
             Thread.Sleep(500);
