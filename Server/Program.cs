@@ -13,6 +13,24 @@ namespace Server
         public ushort packetId;
     }
 
+    class PlayerInfoReq : Packet
+    {
+        public long playerId;
+    }
+
+    class PlayerInfoOk : Packet
+    {
+        public int hp;
+        public int attack;
+    }
+
+    public enum PacketId
+    {
+        PlayerInfoReq = 1,
+        PlayerInfoOk = 2,
+    }
+
+
     class GameSession : PacketSession
     {
         public override void OnConnected(EndPoint endPoint)

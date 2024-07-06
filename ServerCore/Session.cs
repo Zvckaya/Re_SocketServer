@@ -20,21 +20,30 @@ namespace ServerCore
             {
                 //최소한 헤더는 파싱할 수 있는가? 
                 if (buffer.Count < HeaderSize)
+                {
+                    Console.WriteLine($"해설할 패킷 없음{buffer.Count}");
                     break;
+                }
+                    
 
                 //패킷이 완전체로 도착했는가? 
                 ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
+                Console.WriteLine($"dataSize:{dataSize}");
                 if (buffer.Count < dataSize)
+                {
+                    Console.WriteLine("데이터 사이즈 이상");
                     break;
+                }
+             
 
                 //여기 도달했으면 패킷 조립가능 
                 OnRecvPacket(new ArraySegment<byte>(buffer.Array,buffer.Offset,dataSize));//파싱한 패킷 전체를 전달->스택에 복사
-                
+                //Console.WriteLine(" 패킷 전달 ");
 
                 processLen += dataSize;
                 buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize); //다음 부분을 선택 
             }
-            return 0;
+            return processLen;
         }
 
         public abstract void OnRecvPacket(ArraySegment<byte> a); //컨텐츠에서 유효한 패킷을 해석 
@@ -171,7 +180,7 @@ namespace ServerCore
                     }
 
                     //컨텐츠쪽으로 데이터를 넘긴 후 얼마나 처리했는지 받는다. 
-                    int processLen = OnRecv(_recvBuffer.ReadSegment);
+                    int processLen = OnRecv(_recvBuffer.ReadSegment);  // ->OnRecv는 컨텐츠에서 OnRecv 핸들링을 해주기 위해 사용됨 
                     if(processLen < 0 || _recvBuffer.DataSzie < processLen)
                     {
                         Disconnect();
