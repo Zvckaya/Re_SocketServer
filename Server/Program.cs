@@ -7,8 +7,7 @@ using System.Text;
 
 namespace Server
 {
-    
-
+   
     class Program
     {
         static Listener _listenr = new Listener();

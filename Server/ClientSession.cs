@@ -62,8 +62,25 @@ namespace Server
 
         public override void OnRecvPacket(ArraySegment<byte> buffer)
         {
-            ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
-            ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + 2); //파싱한 size(2byte)를 더해줌
+            ushort count = 0;
+
+            ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset+count);
+            count += 2;
+            ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count); //파싱한 size(2byte)를 더해줌
+            count += 2;
+
+            switch ((PacketId)id)
+            {
+                case PacketId.PlayerInfoReq:
+                    {
+                        long playerId = BitConverter.ToInt64(buffer.Array, buffer.Offset + count);
+                        count += 8;
+                        Console.WriteLine($"PlayerInfoReq:{playerId}");
+                    }
+                    break;
+           
+            }
+
             Console.WriteLine($"RecvPacketId:{id} Size,{size}");
 
         }

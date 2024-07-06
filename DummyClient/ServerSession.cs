@@ -40,23 +40,23 @@ namespace DummyClient
 
             //for (int i = 0; i < 5; i++)
             //{
-            PlayerInfoReq packet = new PlayerInfoReq() { size = 4, packetId = (ushort)PacketId.PlayerInfoReq };
+            PlayerInfoReq packet = new PlayerInfoReq() { size = 12, packetId = (ushort)PacketId.PlayerInfoReq, playerId=1 };
 
             ArraySegment<byte> s = SendBufferHelper.Open(4096);
 
+            ushort count = 0;
             byte[] size = BitConverter.GetBytes(packet.size); // BitConvertor를 이용하여 int의 값을 2byte 배열로 변환 할수 있다 
             byte[] packetId = BitConverter.GetBytes(packet.packetId); // 2bytez
             byte[] playerId = BitConverter.GetBytes(packet.playerId);  // long-> 8
 
-            ushort count = 0;
             Array.Copy(size, 0, s.Array, s.Offset + count , 2);
             count += 2;
             Array.Copy(packetId, 0, s.Array, s.Offset + count, 2); // int byte만큼 더해줘야함
             count += 2;
             Array.Copy(playerId, 0, s.Array, s.Offset + count, 8);
             count += 8;
-
             ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
+
             Send(sendBuff);
             //}
 
