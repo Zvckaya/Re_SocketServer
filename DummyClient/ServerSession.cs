@@ -38,9 +38,9 @@ namespace DummyClient
             Console.WriteLine($"[OnConnected]:{endPoint.ToString()}");
 
 
-            for (int i = 0; i < 10; i++)
-            {
-                Packet packet = new Packet() { size = 4, packetId = (ushort)i };
+            //for (int i = 0; i < 5; i++)
+            //{
+                PlayerInfoReq packet = new PlayerInfoReq() { size = 4, packetId = (ushort)PacketId.PlayerInfoReq };
 
                 ArraySegment<byte> openSegemnt = SendBufferHelper.Open(4096);
                 byte[] buffer = BitConverter.GetBytes(packet.size); // BitConvertor를 이용하여 int의 값을 4byte 배열로 변환 할수 있다 
@@ -49,7 +49,7 @@ namespace DummyClient
                 Array.Copy(buffer2, 0, openSegemnt.Array, openSegemnt.Offset + buffer.Length, buffer2.Length); // int byte만큼 더해줘야함 
                 ArraySegment<byte> sendBuff = SendBufferHelper.Close(packet.size);
                 Send(sendBuff);
-            }
+            //}
 
 
         }
