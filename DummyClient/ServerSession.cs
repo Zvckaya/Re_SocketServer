@@ -43,22 +43,21 @@ namespace DummyClient
             PlayerInfoReq packet = new PlayerInfoReq() { size = 12, packetId = (ushort)PacketId.PlayerInfoReq, playerId=1 };
 
             ArraySegment<byte> s = SendBufferHelper.Open(4096);
-
+            bool success = true;
             ushort count = 0;
-            byte[] size = BitConverter.GetBytes(packet.size); // BitConvertor를 이용하여 int의 값을 2byte 배열로 변환 할수 있다 
-            byte[] packetId = BitConverter.GetBytes(packet.packetId); // 2bytez
-            byte[] playerId = BitConverter.GetBytes(packet.playerId);  // long-> 8
 
-            Array.Copy(size, 0, s.Array, s.Offset + count , 2);
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), packet.size); //공간이 모자르면 실패 
             count += 2;
-            Array.Copy(packetId, 0, s.Array, s.Offset + count, 2); // int byte만큼 더해줘야함
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset+count, s.Count-count), packet.packetId);
             count += 2;
-            Array.Copy(playerId, 0, s.Array, s.Offset + count, 8);
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packet.playerId);
             count += 8;
-            ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
 
-            Send(sendBuff);
-            //}
+            ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
+            
+            if(success)
+                Send(sendBuff);
+           
 
 
         }
