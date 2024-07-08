@@ -8,21 +8,58 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    class Packet
+    public abstract class Packet
     {
         public ushort size;
         public ushort packetId;
+
+        public abstract ArraySegment<byte> Write();
+        public abstract void Read(ArraySegment<byte> s);
     }
 
     class PlayerInfoReq : Packet
     {
         public long playerId;
-    }
 
-    class PlayerInfoOk : Packet
-    {
-        public int hp;
-        public int attack;
+        public PlayerInfoReq()
+        {
+            packetId = (ushort)PacketId.PlayerInfoReq;
+        }
+
+        public override void Read(ArraySegment<byte> s)
+        {
+            ushort count = 0;
+
+            ushort size = BitConverter.ToUInt16(s.Array, s.Offset + count);
+            count += 2;
+            //ushort id = BitConverter.ToUInt16(s.Array, s.Offset + count); //파싱한 size(2byte)를 더해줌
+            count += 2;
+            this.playerId = BitConverter.ToInt64(s.Array, s.Offset + count);
+            count += 8;
+
+        }
+
+        public override ArraySegment<byte> Write()
+        {
+            ArraySegment<byte> s = SendBufferHelper.Open(4096);
+            bool success = true;
+            ushort count = 0;
+
+
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.packetId);
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.playerId);
+            count += 8;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count); //패킷의 최종 사이즈는 마지막에 정해주어야 함
+
+            ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
+
+            if (sendBuff == null)
+                return null;
+
+            return sendBuff;
+        }
     }
 
     public enum PacketId
@@ -32,23 +69,13 @@ namespace Server
     }
 
 
+
     class ClientSession : PacketSession
     {
         public override void OnConnected(EndPoint endPoint)
         {
             Console.WriteLine($"[OnConnected]:{endPoint.ToString()}");
-            Packet packet = new Packet() { size = 100, packetId = 100 };
-
-
-            ArraySegment<byte> openSegemnt = SendBufferHelper.Open(4096);
-            byte[] buffer = BitConverter.GetBytes(packet.size); // BitConvertor를 이용하여 int의 값을 4byte 배열로 변환 할수 있다 
-            byte[] buffer2 = BitConverter.GetBytes(packet.packetId); // 4bytez`
-
-
-            Array.Copy(buffer, 0, openSegemnt.Array, openSegemnt.Offset, buffer.Length);
-            Array.Copy(buffer2, 0, openSegemnt.Array, openSegemnt.Offset + buffer.Length, buffer2.Length); // int byte만큼 더해줘야함 
-            ArraySegment<byte> sendBuff = SendBufferHelper.Close(buffer.Length + buffer2.Length);
-
+        
 
             //Send(sendBuff);
             Thread.Sleep(500);
@@ -73,9 +100,9 @@ namespace Server
             {
                 case PacketId.PlayerInfoReq:
                     {
-                        long playerId = BitConverter.ToInt64(buffer.Array, buffer.Offset + count);
-                        count += 8;
-                        Console.WriteLine($"PlayerInfoReq:{playerId}");
+                        PlayerInfoReq p = new PlayerInfoReq();
+                        p.Read(buffer);
+                        Console.WriteLine($"PlayerInfoReq: {p.playerId}");
                     }
                     break;
 

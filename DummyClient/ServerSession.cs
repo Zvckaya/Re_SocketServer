@@ -1,24 +1,62 @@
 ﻿using ServerCore;
+using System;
 using System.Net;
 using System.Text;
 
 namespace DummyClient
 {
-    class Packet
+    public abstract class Packet
     {
         public ushort size;
         public ushort packetId;
+
+        public abstract ArraySegment<byte> Write();
+        public abstract void Read(ArraySegment<byte> s);
     }
 
     class PlayerInfoReq : Packet
     {
         public long playerId;
-    }
 
-    class PlayerInfoOk : Packet
-    {
-        public int hp;
-        public int attack;
+        public PlayerInfoReq()
+        {
+            packetId = (ushort)PacketId.PlayerInfoReq;
+        }
+
+        public override void Read(ArraySegment<byte> s)
+        {
+            ushort count = 0;
+
+            ushort size = BitConverter.ToUInt16(s.Array, s.Offset + count);
+            count += 2;
+            //ushort id = BitConverter.ToUInt16(s.Array, s.Offset + count); //파싱한 size(2byte)를 더해줌
+            count += 2;
+
+            this.playerId = BitConverter.ToInt64(s.Array, s.Offset + count);
+            count += 8;
+        }
+
+        public override ArraySegment<byte> Write()
+        {
+            ArraySegment<byte> s = SendBufferHelper.Open(4096);
+            bool success = true;
+            ushort count = 0;
+
+
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.packetId);
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.playerId);
+            count += 8;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count); //패킷의 최종 사이즈는 마지막에 정해주어야 함
+
+            ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
+
+            if (sendBuff == null)
+                return null;
+
+            return sendBuff;
+        }
     }
 
     public enum PacketId
@@ -36,26 +74,12 @@ namespace DummyClient
 
             //for (int i = 0; i < 5; i++)
             //{
-            PlayerInfoReq packet = new PlayerInfoReq() { packetId = (ushort)PacketId.PlayerInfoReq, playerId = 1 };
+            PlayerInfoReq packet = new PlayerInfoReq() {  playerId = 1001 };
 
-            ArraySegment<byte> s = SendBufferHelper.Open(4096);
-            bool success = true;
-            ushort count = 0;
+            ArraySegment<byte> s = packet.Write();
 
-
-            count += 2;
-            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packet.packetId);
-            count += 2;
-            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packet.playerId);
-            count += 8;
-            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count); //패킷의 최종 사이즈는 마지막에 정해주어야 함
-
-            ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
-
-            if (success)
-                Send(sendBuff);
-
-
+            if (s != null)
+                Send(s);
 
         }
 
