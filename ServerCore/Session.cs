@@ -24,7 +24,7 @@ namespace ServerCore
                     Console.WriteLine($"해설할 패킷 없음{buffer.Count}");
                     break;
                 }
-                    
+                
 
                 //패킷이 완전체로 도착했는가? 
                 ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);

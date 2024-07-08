@@ -1,10 +1,6 @@
 ﻿using ServerCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DummyClient
 {
@@ -40,25 +36,25 @@ namespace DummyClient
 
             //for (int i = 0; i < 5; i++)
             //{
-            PlayerInfoReq packet = new PlayerInfoReq() { packetId = (ushort)PacketId.PlayerInfoReq, playerId=1 };
+            PlayerInfoReq packet = new PlayerInfoReq() { packetId = (ushort)PacketId.PlayerInfoReq, playerId = 1 };
 
             ArraySegment<byte> s = SendBufferHelper.Open(4096);
             bool success = true;
             ushort count = 0;
 
-            
+
             count += 2;
-            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset+count, s.Count-count), packet.packetId);
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packet.packetId);
             count += 2;
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), packet.playerId);
             count += 8;
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count); //패킷의 최종 사이즈는 마지막에 정해주어야 함
 
             ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
-            
-            if(success)
+
+            if (success)
                 Send(sendBuff);
-           
+
 
 
         }

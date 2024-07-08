@@ -64,7 +64,7 @@ namespace Server
         {
             ushort count = 0;
 
-            ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset+count);
+            ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count);
             count += 2;
             ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count); //파싱한 size(2byte)를 더해줌
             count += 2;
@@ -78,7 +78,7 @@ namespace Server
                         Console.WriteLine($"PlayerInfoReq:{playerId}");
                     }
                     break;
-           
+
             }
 
             Console.WriteLine($"RecvPacketId:{id} Size,{size}");
