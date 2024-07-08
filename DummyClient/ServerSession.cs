@@ -42,7 +42,6 @@ namespace DummyClient
             bool success = true;
             ushort count = 0;
 
-
             count += 2;
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.packetId);
             count += 2;

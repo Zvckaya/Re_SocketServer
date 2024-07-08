@@ -34,9 +34,9 @@ namespace Server
             count += 2;
             //ushort id = BitConverter.ToUInt16(s.Array, s.Offset + count); //파싱한 size(2byte)를 더해줌
             count += 2;
+
             this.playerId = BitConverter.ToInt64(s.Array, s.Offset + count);
             count += 8;
-
         }
 
         public override ArraySegment<byte> Write()
@@ -44,7 +44,6 @@ namespace Server
             ArraySegment<byte> s = SendBufferHelper.Open(4096);
             bool success = true;
             ushort count = 0;
-
 
             count += 2;
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.packetId);

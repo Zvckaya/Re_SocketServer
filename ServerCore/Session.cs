@@ -21,7 +21,7 @@ namespace ServerCore
                 //최소한 헤더는 파싱할 수 있는가? 
                 if (buffer.Count < HeaderSize)
                 {
-                    Console.WriteLine($"해설할 패킷 없음{buffer.Count}");
+                    //Console.WriteLine($"해설할 패킷 없음{buffer.Count}");
                     break;
                 }
                 
