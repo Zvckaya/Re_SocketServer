@@ -17,6 +17,7 @@ namespace DummyClient
     class PlayerInfoReq : Packet
     {
         public long playerId;
+        public string name;
 
         public PlayerInfoReq()
         {
@@ -43,11 +44,11 @@ namespace DummyClient
             bool success = true;
             ushort count = 0;
 
-            count += 2;
+            count += sizeof(ushort);
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.packetId);
-            count += 2;
+            count += sizeof(ushort);
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.playerId);
-            count += 8;
+            count += sizeof(long);
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), 12); //패킷의 최종 사이즈는 마지막에 정해주어야 함
 
             ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);

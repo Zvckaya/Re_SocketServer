@@ -35,8 +35,9 @@ namespace Server
             //ushort id = BitConverter.ToUInt16(s.Array, s.Offset + count); //파싱한 size(2byte)를 더해줌
             count += 2;
 
-            this.playerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(s.Array, s.Offset + count, s.Count - count));
-
+            //this.playerId = BitConverter.ToInt64(s.Array, s.Offset + count);
+            this.playerId = BitConverter.ToInt64(
+                new ReadOnlySpan<byte>(s.Array, s.Offset + count, s.Count - count));
             count += 8;
         }
 
@@ -46,12 +47,12 @@ namespace Server
             bool success = true;
             ushort count = 0;
 
-            count += 2;
+            count += sizeof(ushort);
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.packetId);
-            count += 2;
+            count += sizeof(ushort);
             success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.playerId);
-            count += 8;
-            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count); //패킷의 최종 사이즈는 마지막에 정해주어야 함
+            count += sizeof(long);
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), 12); //패킷의 최종 사이즈는 마지막에 정해주어야 함
 
             ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
 
