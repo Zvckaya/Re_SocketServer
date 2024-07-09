@@ -35,7 +35,8 @@ namespace Server
             //ushort id = BitConverter.ToUInt16(s.Array, s.Offset + count); //파싱한 size(2byte)를 더해줌
             count += 2;
 
-            this.playerId = BitConverter.ToInt64(s.Array, s.Offset + count);
+            this.playerId = BitConverter.ToInt64(new ReadOnlySpan<byte>(s.Array, s.Offset + count, s.Count - count));
+
             count += 8;
         }
 
