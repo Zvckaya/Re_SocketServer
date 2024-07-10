@@ -19,10 +19,44 @@ namespace DummyClient
         public long playerId;
         public string name;
 
+        public struct SkillInfo
+        {
+            public int id;
+            public short level;
+            public float duration;
+
+            public bool Write(Span<byte> s,ref ushort count)
+            {
+                bool success = true;
+                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), id);
+                count += sizeof(int);
+                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), level);
+                count += sizeof(short);
+                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), duration);
+                count += sizeof(float);
+
+                return success;
+            }
+
+            public void Read(ReadOnlySpan<byte> s,ref ushort count)
+            {
+                id = BitConverter.ToInt32(s.Slice(count, s.Length - count)); // 4에서부터 
+                count += sizeof(int);
+                level = BitConverter.ToInt16(s.Slice(count, s.Length - count)); // 4에서부터 
+                count += sizeof(short);
+                duration = BitConverter.ToSingle(s.Slice(count, s.Length - count)); // 4에서부터 
+                count += sizeof(float);
+            }
+
+        }
+
+        public List<SkillInfo> skills = new List<SkillInfo>();
+
 
         public PlayerInfoReq()
         {
-            packetId = (ushort)PacketId.PlayerInfoReq;
+            this.packetId = (ushort)PacketId.PlayerInfoReq;
+
         }
 
         public override void Read(ArraySegment<byte> segment)
@@ -43,6 +77,17 @@ namespace DummyClient
             count += sizeof(ushort);
             this.name = Encoding.Unicode.GetString(s.Slice(count, nameLen));
             count += nameLen;
+
+            //skill list 
+            ushort skillLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count)); //맨처음 스킬list의 사이즈를 받아온다.
+            count += sizeof(ushort);
+            skills.Clear(); // 기존에 다른 정보를 들고 있었을 수 있기 때문에.
+            for(int i =0; i< skillLen; i++)
+            {
+                SkillInfo skill = new SkillInfo();
+                skill.Read(s, ref count);
+                skills.Add(skill);
+            }
 
         }
 
@@ -68,7 +113,12 @@ namespace DummyClient
             count += sizeof(ushort);
             count += nameLen;
 
-
+            //skill list 
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)skills.Count);
+            count += sizeof(ushort);
+            foreach(SkillInfo skill in skills) //skills를 순회하며 count와 전송할 
+                success &= skill.Write(s, ref count);
+            
             success &= BitConverter.TryWriteBytes(s, count); //마지막은 패킷의 사이즈를 나타낸다.
 
             ArraySegment<byte> sendBuff = SendBufferHelper.Close(count);
@@ -96,6 +146,9 @@ namespace DummyClient
             //for (int i = 0; i < 5; i++)
             //{
             PlayerInfoReq packet = new PlayerInfoReq() {  playerId = 1001 , name = "ABCD" };
+            packet.skills.Add(new PlayerInfoReq.SkillInfo() { id = 101, level = 1, duration = 3.0f });
+            packet.skills.Add(new PlayerInfoReq.SkillInfo() { id = 102, level = 2, duration = 4.0f });
+            packet.skills.Add(new PlayerInfoReq.SkillInfo() { id = 103, level = 3, duration = 5.0f });
 
             ArraySegment<byte> s = packet.Write();
 
