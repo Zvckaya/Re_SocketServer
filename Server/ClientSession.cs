@@ -53,12 +53,15 @@ namespace Server
 
         }
 
+        public List<int> myList = new List<int>();
+
         public List<SkillInfo> skills = new List<SkillInfo>();
 
 
         public PlayerInfoReq()
         {
             this.packetId = (ushort)PacketId.PlayerInfoReq;
+
         }
 
         public override void Read(ArraySegment<byte> segment)
@@ -79,6 +82,16 @@ namespace Server
             count += sizeof(ushort);
             this.name = Encoding.Unicode.GetString(s.Slice(count, nameLen));
             count += nameLen;
+
+            //list 
+            ushort listLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+            count += sizeof(ushort);
+            for (int i = 0; i < listLen; i++)
+            {
+                int num = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+                myList.Add(num);
+                count += sizeof(int);
+            }
 
             //skill list 
             ushort skillLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count)); //맨처음 스킬list의 사이즈를 받아온다.
@@ -114,6 +127,15 @@ namespace Server
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), nameLen);
             count += sizeof(ushort);
             count += nameLen;
+
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)myList.Count);
+            count += sizeof(ushort);
+            foreach (int i in myList)
+            {
+                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), i);
+                count += sizeof(int);
+            }
+
 
             //skill list 
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)skills.Count);
@@ -174,6 +196,9 @@ namespace Server
                         p.Read(buffer);
                         Console.WriteLine($"PlayerInfoReq: {p.playerId} ");
                         Console.WriteLine($"Playername: {p.name}");
+                        foreach(int i in p.myList){
+                            Console.WriteLine($"MyList {i}");
+                        }
 
                         foreach (PlayerInfoReq.SkillInfo skill in p.skills)
                         {

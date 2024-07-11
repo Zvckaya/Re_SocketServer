@@ -50,6 +50,8 @@ namespace DummyClient
 
         }
 
+        public List<int> myList = new List<int>();
+
         public List<SkillInfo> skills = new List<SkillInfo>();
 
 
@@ -77,6 +79,18 @@ namespace DummyClient
             count += sizeof(ushort);
             this.name = Encoding.Unicode.GetString(s.Slice(count, nameLen));
             count += nameLen;
+
+            //list 
+            ushort listLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+            count += sizeof(ushort);
+            for(int i = 0; i < listLen; i++)
+            {
+                int num = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+                myList.Add(num);
+                count+=sizeof(int);
+            }
+
+
 
             //skill list 
             ushort skillLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count)); //맨처음 스킬list의 사이즈를 받아온다.
@@ -113,6 +127,16 @@ namespace DummyClient
             count += sizeof(ushort);
             count += nameLen;
 
+            //list 
+            success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)myList.Count);
+            count += sizeof(ushort);
+            foreach(int i in myList)
+            {
+                success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), i);
+                count += sizeof(int);
+            }
+
+
             //skill list 
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)skills.Count);
             count += sizeof(ushort);
@@ -146,6 +170,12 @@ namespace DummyClient
             //for (int i = 0; i < 5; i++)
             //{
             PlayerInfoReq packet = new PlayerInfoReq() {  playerId = 1001 , name = "ABCD" };
+
+            packet.myList.Add(1);
+            packet.myList.Add(2);
+            packet.myList.Add(3);
+
+
             packet.skills.Add(new PlayerInfoReq.SkillInfo() { id = 101, level = 1, duration = 3.0f });
             packet.skills.Add(new PlayerInfoReq.SkillInfo() { id = 102, level = 2, duration = 4.0f });
             packet.skills.Add(new PlayerInfoReq.SkillInfo() { id = 103, level = 3, duration = 5.0f });
