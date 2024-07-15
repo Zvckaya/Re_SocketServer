@@ -43,12 +43,12 @@ namespace DummyClient
 
         }
 
-        public List<int> myList = new List<int>();
 
         public List<SkillInfo> skills = new List<SkillInfo>();
 
+        public List<int> myList = new List<int>();
 
-      
+
 
         public void Read(ArraySegment<byte> segment)
         {
@@ -69,6 +69,7 @@ namespace DummyClient
             this.name = Encoding.Unicode.GetString(s.Slice(count, nameLen));
             count += nameLen;
 
+            skills.Clear();
             //list 
             ushort listLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
             count += sizeof(ushort);
