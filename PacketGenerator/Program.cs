@@ -7,6 +7,8 @@ namespace PacketGenerator
     class Program
     {
         static string genPackets;
+        static ushort packetId;
+        static string packetEnum;
 
         static void Main(string[] args)
         {
@@ -28,9 +30,9 @@ namespace PacketGenerator
 
                 }
 
-                File.WriteAllText("GenPackets.cs", genPackets);
+                string fileText= string.Format(PacketFormat.fileFormat, packetEnum, genPackets);
+                File.WriteAllText("GenPackets.cs", fileText);
             }
-
         }
 
         public static void ParsePacket(XmlReader r)
@@ -47,15 +49,16 @@ namespace PacketGenerator
                 return;
             }
 
-            Tuple<string,string,string> t= ParseMenber(r); //멤버 하나하나 파싱
+            Tuple<string,string,string> t= ParseMember(r); //멤버 하나하나 파싱
             genPackets += string.Format(PacketFormat.packetFormat, packetName, t.Item1, t.Item2, t.Item3);
+            packetEnum += string.Format(PacketFormat.packetEnumFormat, packetName, ++packetId);
         }
 
         // {1} 멤버변수
         // {2} 멤버변수 Read
         // {3} 멤버번수 Write
 
-        private static Tuple<string,string,string> ParseMenber(XmlReader r) //정보 긁기
+        private static Tuple<string,string,string> ParseMember(XmlReader r) //정보 긁기
         {
             string packetName = r["name"];
             string memberCode = "";
@@ -130,7 +133,7 @@ namespace PacketGenerator
                 return null;
             }
 
-            Tuple<string,string,string> t= ParseMenber(r);
+            Tuple<string,string,string> t= ParseMember(r);
 
             string memberCode = string.Format(PacketFormat.memberListFormat,
                 FirstCharToUpper(listName), FirstCharToLower(listName),
