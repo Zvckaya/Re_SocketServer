@@ -58,7 +58,7 @@ namespace PacketGenerator
         private static Tuple<string,string,string> ParseMenber(XmlReader r) //정보 긁기
         {
             string packetName = r["name"];
-            string memeberCode = "";
+            string memberCode = "";
             string readCode = "";
             string writeCode = "";
 
@@ -69,11 +69,18 @@ namespace PacketGenerator
                     break;
 
                 string memberName = r["name"];
-                if (string.IsNullOrEmpty(memberName))
+                if (string.IsNullOrEmpty(memberName))  //pdl 을 한줄 씩 긁어온다
                 {
                     Console.WriteLine("member witout name");
                     return null;
                 }
+
+                if (string.IsNullOrEmpty(memberCode) == false)
+                    memberCode += Environment.NewLine; // 가상 enter 
+                if (string.IsNullOrEmpty(readCode) == false)
+                    readCode += Environment.NewLine; // 가상 enter 
+                if (string.IsNullOrEmpty(writeCode) == false)
+                    writeCode += Environment.NewLine; // 가상 enter 
 
                 string memberType = r.Name.ToLower();
                 switch (memberType)
@@ -86,7 +93,12 @@ namespace PacketGenerator
                     case "long":
                     case "float":
                     case "double":
+                        memberCode += string.Format(PacketFormat.mamberFormat,memberType,memberName);
+                        readCode += string.Format(PacketFormat.readFormat, memberName, ToMemberType(memberType), memberType);
+                        writeCode += string.Format(PacketFormat.writeFormat, memberName, memberType);
+                        break;
                     case "string":
+                        break;
                     case "list":
                         break;
                     default:
@@ -95,8 +107,31 @@ namespace PacketGenerator
                 }
 
             }
+            return new Tuple<string, string, string>(memberCode, readCode, writeCode);
+        }
 
-            return new Tuple<string, string, string>(memeberCode, readCode, writeCode);
+        public static string ToMemberType(string memberType)
+        {
+            switch (memberType)
+            {
+                case "bool":
+                    return "ToBoolean";
+                case "byte":
+                case "short":
+                    return "ToInt16";
+                case "ushort":
+                    return "ToUInt16";
+                case "int":
+                    return "ToInt32";
+                case "long":
+                    return "ToInt64";
+                case "float":
+                    return "ToSingle";
+                case "double":
+                    return "ToDouble";
+                default:
+                    return "";
+            }
         }
     }
 }
