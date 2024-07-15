@@ -93,11 +93,14 @@ namespace PacketGenerator
                     case "long":
                     case "float":
                     case "double":
-                        memberCode += string.Format(PacketFormat.mamberFormat,memberType,memberName);
+                        memberCode += string.Format(PacketFormat.memberFormat, memberType,memberName);
                         readCode += string.Format(PacketFormat.readFormat, memberName, ToMemberType(memberType), memberType);
                         writeCode += string.Format(PacketFormat.writeFormat, memberName, memberType);
                         break;
                     case "string":
+                        memberCode += string.Format(PacketFormat.memberFormat, memberType, memberName);
+                        readCode += string.Format(PacketFormat.readStringFormat, memberName);
+                        writeCode += string.Format(PacketFormat.writeStringFormat, memberName);
                         break;
                     case "list":
                         break;

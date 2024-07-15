@@ -55,7 +55,7 @@ class {0}
 ";
         //{0} 변수 형식
         //{1} 변수 이름
-        public static string mamberFormat =
+        public static string memberFormat =
 @" public {0} {1};
 ";
         //{0} 변수이름
