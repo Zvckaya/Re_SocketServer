@@ -6,6 +6,7 @@ namespace PacketGenerator
 {
     class Program
     {
+        static string genPackets;
 
         static void Main(string[] args)
         {
@@ -24,9 +25,10 @@ namespace PacketGenerator
 
                     if (r.Depth == 1 && r.NodeType == XmlNodeType.Element)//endelement parsing 방지
                         ParsePacket(r);
-                    
-                    //Console.WriteLine(r.Name+" " + r["name"]);
+
                 }
+
+                File.WriteAllText("GenPackets.cs", genPackets);
             }
 
         }
@@ -45,12 +47,20 @@ namespace PacketGenerator
                 return;
             }
 
-            ParseMenber(r);
+            Tuple<string,string,string> t= ParseMenber(r); //멤버 하나하나 파싱
+            genPackets += string.Format(PacketFormat.packetFormat, packetName, t.Item1, t.Item2, t.Item3);
         }
 
-        private static void ParseMenber(XmlReader r) //정보 긁기
+        // {1} 멤버변수
+        // {2} 멤버변수 Read
+        // {3} 멤버번수 Write
+
+        private static Tuple<string,string,string> ParseMenber(XmlReader r) //정보 긁기
         {
             string packetName = r["name"];
+            string memeberCode = "";
+            string readCode = "";
+            string writeCode = "";
 
             int depth = r.Depth + 1; // 깊이 1-> playerInfoReq 깊이 2 실제 long string 형 변수
             while (r.Read())
@@ -62,7 +72,7 @@ namespace PacketGenerator
                 if (string.IsNullOrEmpty(memberName))
                 {
                     Console.WriteLine("member witout name");
-                    return;
+                    return null;
                 }
 
                 string memberType = r.Name.ToLower();
@@ -85,6 +95,8 @@ namespace PacketGenerator
                 }
 
             }
+
+            return new Tuple<string, string, string>(memeberCode, readCode, writeCode);
         }
     }
 }
