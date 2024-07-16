@@ -39,7 +39,6 @@ public enum PacketID
 class {0}
 {{
     {1}
-
     
     public void Read(ArraySegment<byte> segment)
     {{
@@ -106,7 +105,7 @@ public struct {0}
     {{
         bool success = true; 
         {4}
-        reuturn success;
+        return success;
     }}
 }}
 
