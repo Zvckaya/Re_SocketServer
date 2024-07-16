@@ -83,7 +83,7 @@ class {0}
         // {0} 패킷 이름
         // {1} 패킷 번호
         public static string packetEnumFormat =
-@"{0} = {1};
+@"{0} = {1},
 ";
 
         // {0} 리스트 이름 (대문자)
