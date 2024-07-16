@@ -51,7 +51,7 @@ namespace PacketGenerator
 
             Tuple<string,string,string> t= ParseMember(r); //멤버 하나하나 파싱
             genPackets += string.Format(PacketFormat.packetFormat, packetName, t.Item1, t.Item2, t.Item3);
-            packetEnum += string.Format(PacketFormat.packetEnumFormat, packetName, ++packetId);
+            packetEnum += string.Format(PacketFormat.packetEnumFormat, packetName, ++packetId) + Environment.NewLine+"\t";
         }
 
         // {1} 멤버변수
@@ -88,8 +88,13 @@ namespace PacketGenerator
                 string memberType = r.Name.ToLower();
                 switch (memberType)
                 {
-                    case "bool":
                     case "byte":
+                    case "sbyte":
+                        memberCode += string.Format(PacketFormat.memberFormat, memberType, memberName);
+                        readCode += string.Format(PacketFormat.readByteFormat, memberName, memberType);
+                        writeCode += string.Format(PacketFormat.writeByteFormat, memberName, memberType);
+                        break;
+                    case "bool":
                     case "short":
                     case "ushort":
                     case "int":

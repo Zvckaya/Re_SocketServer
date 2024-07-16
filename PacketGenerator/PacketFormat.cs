@@ -118,8 +118,15 @@ public List<{0}> {1}s = new List<{0}>();
         //{1} To~ 변수 형식
         //{2} 변수형식
         public static string readFormat =
-@" this.{0} = BitConverter.{1}(s.Slice(count, s.Length - count)); 
+@"this.{0} = BitConverter.{1}(s.Slice(count, s.Length - count)); 
 count += sizeof({2});
+";
+
+        //{0} 변수 이름 
+        //{1} 변수 형식
+        public static string readByteFormat =
+@"this.{0} = segment.Array[segment.Offset + count];
+count += sizeof({1});
 ";
 
         //{0} 변수이름
@@ -151,6 +158,14 @@ for(int i =0; i< {1}Len; i++)
 @"success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.{0});
 count += sizeof({1});
 ";
+
+        //{0} 변수 이름 
+        //{1} 변수 형식
+        public static string writeByteFormat =
+@"segment.Array[segment.Offset + count] = this.{0};
+count += sizeof({1});
+";
+
         //{0} 변수이름
 
         public static string writeStringFormat =
