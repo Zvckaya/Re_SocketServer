@@ -138,6 +138,8 @@ class PlayerInfoReq : IPacket
         this.name = Encoding.Unicode.GetString(s.Slice(count, nameLen));
         count += nameLen;
 
+
+
         this.skills.Clear();
         ushort skillLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
         count += sizeof(ushort);

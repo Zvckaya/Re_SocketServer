@@ -14,6 +14,8 @@ namespace Server
 
         static void Main(string[] args)
         {
+            PacketManager.Instance.Register(); //single thread에서의 실행 
+
             //DNS Domain Name System 사용 
             string host = Dns.GetHostName(); // 내 local 컴퓨터의 host 
             IPHostEntry ipHost = Dns.GetHostEntry(host); //hostname을 이용하여 iphostentry를 구한다
