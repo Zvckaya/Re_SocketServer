@@ -1,4 +1,3 @@
-
 using ServerCore;
 using System;
 using System.Collections.Generic;
@@ -16,8 +15,15 @@ public enum PacketID
 
 }
 
+interface IPacket
+{
+    ushort Protocol { get; }
+    void Read(ArraySegment<byte> segment);
+    ArraySegment<byte> Write();
+}
 
-class PlayerInfoReq
+
+class PlayerInfoReq : IPacket
 {
     public byte testByte;
 
@@ -112,6 +118,8 @@ class PlayerInfoReq
 
 
 
+    public ushort Protocol { get { return (ushort)PacketID.PlayerInfoReq; } }
+
     public void Read(ArraySegment<byte> segment)
     {
         ushort count = 0;
@@ -119,7 +127,6 @@ class PlayerInfoReq
         ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
         count += sizeof(ushort);
         count += sizeof(ushort);
-
         this.testByte = segment.Array[segment.Offset + count];
         count += sizeof(byte);
 
@@ -153,7 +160,7 @@ class PlayerInfoReq
         Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
 
         count += sizeof(ushort);
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketId.PlayerInfoReq);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.PlayerInfoReq);
         count += sizeof(ushort);
         segment.Array[segment.Offset + count] = this.testByte;
         count += sizeof(byte);
@@ -182,10 +189,12 @@ class PlayerInfoReq
     }
 }
 
-class Test
+class Test : IPacket
 {
     public int testInt;
 
+
+    public ushort Protocol { get { return (ushort)PacketID.Test; } }
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -194,7 +203,6 @@ class Test
         ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
         count += sizeof(ushort);
         count += sizeof(ushort);
-
         this.testInt = BitConverter.ToInt32(s.Slice(count, s.Length - count));
         count += sizeof(int);
 
@@ -210,7 +218,7 @@ class Test
         Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
 
         count += sizeof(ushort);
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketId.Test);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.Test);
         count += sizeof(ushort);
         success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.testInt);
         count += sizeof(int);
