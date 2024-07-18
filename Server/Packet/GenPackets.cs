@@ -16,15 +16,8 @@ public enum PacketID
 
 }
 
-interface IPacket
-{
-    ushort Protocol { get; }
-    void Read(ArraySegment<byte> segment);
-    ArraySegment<byte> Write();
-}
 
-
-class PlayerInfoReq :IPacket
+class PlayerInfoReq
 {
     public byte testByte;
 
@@ -41,8 +34,8 @@ class PlayerInfoReq :IPacket
 
         public float duration;
 
-
         public Skill() { }
+
 
         public struct Attribute
         {
@@ -116,8 +109,6 @@ class PlayerInfoReq :IPacket
     }
 
     public List<Skill> skills = new List<Skill>();
-
-    public ushort Protocol { get { return (ushort)PacketID.PlayerInfoReq; } }
 
 
 
