@@ -8,5 +8,17 @@ namespace Server
 {
     class PacketManager
     {
+        #region Singleton
+        static PacketManager _instance;
+        public static PacketManager Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new PacketManager();
+                return _instance;
+            }
+        }
+        #endregion
     }
 }

@@ -194,16 +194,8 @@ namespace Server
                     {
                         PlayerInfoReq p = new PlayerInfoReq();
                         p.Read(buffer);
-                        Console.WriteLine($"PlayerInfoReq: {p.playerId} ");
-                        Console.WriteLine($"Playername: {p.name}");
-                        foreach(int i in p.myList){
-                            Console.WriteLine($"MyList {i}");
-                        }
 
-                        foreach (PlayerInfoReq.SkillInfo skill in p.skills)
-                        {
-                            Console.WriteLine($"Skill {skill.id} {skill.duration} {skill.level}");
-                        }
+                        
                     }
                     break;
 
