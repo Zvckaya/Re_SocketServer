@@ -12,8 +12,7 @@ namespace PacketGenerator
         //{1} 패킷 목록
 
         public static string fileFormat =
-@"
-using ServerCore;
+@"using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
