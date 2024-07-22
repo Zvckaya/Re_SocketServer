@@ -19,12 +19,18 @@ namespace Server
             Console.WriteLine($"[OnConnected]:{endPoint.ToString()}");
 
             // 원래는 클라이언트 리소스 로딩 완료시 입장해야함.
-            //todo 
+            Program.Room.Enter(this);
 
         }
 
         public override void OnDisconnected(EndPoint endPoint)
         {
+            SessionManager.Instance.Remove(this);
+            if(room != null)
+            {
+                room.Leave(this);
+                room = null;
+            }
             Console.WriteLine($"[Disconnect] {endPoint.ToString()}");
         }
 
