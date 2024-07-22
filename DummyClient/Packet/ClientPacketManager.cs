@@ -23,7 +23,7 @@ class PacketManager
 
     public void Register()
     {
-             _onRecv.Add((ushort)PacketID.S_Chat, MakePacket<S_Chat>);
+        _onRecv.Add((ushort)PacketID.S_Chat, MakePacket<S_Chat>);
         _handler.Add((ushort)PacketID.S_Chat, PacketHandler.S_ChatHandler);
 
 
@@ -52,7 +52,7 @@ class PacketManager
         p.Read(buffer);
 
         Action<PacketSession, IPacket> action = null;
-        if(_handler.TryGetValue(p.Protocol,out action))
+        if (_handler.TryGetValue(p.Protocol, out action))
         {
             action.Invoke(session, p);
         }

@@ -15,18 +15,21 @@ namespace PacketGenerator
 
 class PacketManager
 {{
-    #region Singleton
-    static PacketManager _instance;
+      #region Singleton
+    static PacketManager _instance = new PacketManager();
     public static PacketManager Instance
     {{
         get
         {{
-            if (_instance == null)
-                _instance = new PacketManager();
             return _instance;
         }}
     }}
     #endregion
+
+    PacketManager()
+    {
+        Register();
+    }
 
     Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>> _onRecv =
         new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>>();

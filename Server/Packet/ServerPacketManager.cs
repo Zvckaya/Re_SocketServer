@@ -3,17 +3,20 @@ using ServerCore;
 class PacketManager
 {
     #region Singleton
-    static PacketManager _instance;
+    static PacketManager _instance = new PacketManager();
     public static PacketManager Instance
     {
         get
         {
-            if (_instance == null)
-                _instance = new PacketManager();
             return _instance;
         }
     }
     #endregion
+
+    PacketManager()
+    {
+        Register();
+    }
 
     Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>> _onRecv =
         new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>>();
@@ -23,7 +26,7 @@ class PacketManager
 
     public void Register()
     {
-             _onRecv.Add((ushort)PacketID.C_Chat, MakePacket<C_Chat>);
+        _onRecv.Add((ushort)PacketID.C_Chat, MakePacket<C_Chat>);
         _handler.Add((ushort)PacketID.C_Chat, PacketHandler.C_ChatHandler);
 
 
@@ -52,7 +55,7 @@ class PacketManager
         p.Read(buffer);
 
         Action<PacketSession, IPacket> action = null;
-        if(_handler.TryGetValue(p.Protocol,out action))
+        if (_handler.TryGetValue(p.Protocol, out action))
         {
             action.Invoke(session, p);
         }
