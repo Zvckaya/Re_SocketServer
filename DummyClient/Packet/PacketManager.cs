@@ -1,6 +1,4 @@
 
-using ServerCore;
-
 class PacketManager
 {
     #region Singleton
@@ -24,10 +22,10 @@ class PacketManager
 
     public void Register()
     {
-        _onRecv.Add((ushort)PacketID.PlayerInfoReq, MakePacket<PlayerInfoReq>);
+             _onRecv.Add((ushort)PacketID.PlayerInfoReq, MakePacket<PlayerInfoReq>);
         _handler.Add((ushort)PacketID.PlayerInfoReq, PacketHandler.PlayerInfoReqHandler);
 
-        _onRecv.Add((ushort)PacketID.Test, MakePacket<Test>);
+      _onRecv.Add((ushort)PacketID.Test, MakePacket<Test>);
         _handler.Add((ushort)PacketID.Test, PacketHandler.TestHandler);
 
 
@@ -56,7 +54,7 @@ class PacketManager
         p.Read(buffer);
 
         Action<PacketSession, IPacket> action = null;
-        if (_handler.TryGetValue(p.Protocol, out action))
+        if(_handler.TryGetValue(p.Protocol,out action))
         {
             action.Invoke(session, p);
         }
