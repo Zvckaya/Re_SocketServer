@@ -1,4 +1,5 @@
-﻿using ServerCore;
+﻿using Server;
+using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +16,14 @@ class PacketHandler
 
     }
 
-    internal static void C_ChatHandler(PacketSession session, IPacket packet)
+    public static void C_ChatHandler(PacketSession session, IPacket packet)
     {
-        throw new NotImplementedException();
+        C_Chat chatPacket = packet as C_Chat;
+        ClientSession clientSession = session as ClientSession;
+
+        if (clientSession.room == null)
+            return;
+
+        clientSession.room.BroadCast(clientSession,chatPacket.chat);
     }
 }
