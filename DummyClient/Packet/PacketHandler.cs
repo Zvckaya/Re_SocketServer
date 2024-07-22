@@ -24,4 +24,9 @@ class PacketHandler
     {
 
     }
+
+    internal static void S_ChatHandler(PacketSession session, IPacket packet)
+    {
+        throw new NotImplementedException();
+    }
 }
