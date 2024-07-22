@@ -9,14 +9,23 @@ namespace Server
     class GameRoom
     {
         List<ClientSession> _sessions = new List<ClientSession>();
+        object _lock = new object();
 
         public void Enter(ClientSession session)
         {
-            _sessions.Add(session);
+            lock (_lock)
+            {
+                _sessions.Add(session);
+                session.room = this;
+            }
+
         }
 
         public void Leave(ClientSession session) {
-            _sessions.Remove(session);
+            lock (_lock)
+            {
+                _sessions.Remove(session);
+            }
         }
     }
 }

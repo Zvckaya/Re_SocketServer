@@ -11,6 +11,7 @@ namespace Server
     class Program
     {
         static Listener _listenr = new Listener();
+        public static GameRoom Room = new GameRoom();
 
         static void Main(string[] args)
         {
