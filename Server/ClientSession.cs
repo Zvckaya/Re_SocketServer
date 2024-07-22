@@ -11,14 +11,16 @@ namespace Server
 
     class ClientSession : PacketSession
     {
+        public int SessionId { get; set; }
+        public GameRoom room { get; set; }
+
         public override void OnConnected(EndPoint endPoint)
         {
             Console.WriteLine($"[OnConnected]:{endPoint.ToString()}");
-        
-
-            //Send(sendBuff);
-            Thread.Sleep(500);
-            Disconnect();
+       
+            // 원래는 클라이언트 리소스 로딩 완료시 입장해야함.
+            //todo 
+            
         }
 
         public override void OnDisconnected(EndPoint endPoint)
