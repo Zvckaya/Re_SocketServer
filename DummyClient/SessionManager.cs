@@ -24,7 +24,7 @@ namespace DummyClient
             }
         }
 
-        void SendForEach()
+        public void SendForEach()
         {
             lock (_lock)
             {

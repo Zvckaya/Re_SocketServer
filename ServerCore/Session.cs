@@ -28,7 +28,7 @@ namespace ServerCore
 
                 //패킷이 완전체로 도착했는가? 
                 ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
-                Console.WriteLine($"dataSize:{dataSize}");
+               // Console.WriteLine($"dataSize:{dataSize}");
                 if (buffer.Count < dataSize)
                 {
                     Console.WriteLine("데이터 사이즈 이상");
