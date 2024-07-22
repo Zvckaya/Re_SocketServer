@@ -159,12 +159,12 @@ namespace DummyClient
 
             //for (int i = 0; i < 5; i++)
             //{
-            PlayerInfoReq packet = new PlayerInfoReq() { playerId = 1001, name = "ABCD" };
+            C_PlayerInfoReq packet = new C_PlayerInfoReq() { playerId = 1001, name = "ABCD" };
 
    
-            packet.skills.Add(new PlayerInfoReq.Skill() { id = 101, level = 1, duration = 3.0f });
-            packet.skills.Add(new PlayerInfoReq.Skill() { id = 102, level = 2, duration = 4.0f });
-            packet.skills.Add(new PlayerInfoReq.Skill() { id = 103, level = 3, duration = 5.0f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 101, level = 1, duration = 3.0f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 102, level = 2, duration = 4.0f });
+            packet.skills.Add(new C_PlayerInfoReq.Skill() { id = 103, level = 3, duration = 5.0f });
 
             ArraySegment<byte> s = packet.Write();
 

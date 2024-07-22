@@ -23,8 +23,8 @@ class PacketManager
 
     public void Register()
     {
-             _onRecv.Add((ushort)PacketID.C_PlayerInfoReq, MakePacket<C_PlayerInfoReq>);
-        _handler.Add((ushort)PacketID.C_PlayerInfoReq, PacketHandler.C_PlayerInfoReqHandler);
+             _onRecv.Add((ushort)PacketID.S_Test, MakePacket<S_Test>);
+        _handler.Add((ushort)PacketID.S_Test, PacketHandler.S_TestHandler);
 
 
     }
