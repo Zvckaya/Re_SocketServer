@@ -69,6 +69,14 @@ namespace ServerCore
         public abstract void OnSend(int numOfByte);
         public abstract void OnDisconnected(EndPoint endPoint);
 
+        void Clear()
+        {
+            lock (_lock)
+            {
+                _sendQueue.Clear();
+                _pendingList.Clear();
+            }
+        }
 
 
         public void Start(Socket socket)
@@ -104,6 +112,7 @@ namespace ServerCore
             OnDisconnected(_socket.RemoteEndPoint);
             _socket.Shutdown(SocketShutdown.Both);
             _socket.Close();
+            Clear();
         }
 
 
@@ -112,6 +121,9 @@ namespace ServerCore
 
         void RegisterSend()
         {
+            if (_disconnected == 1)
+                return;
+            
             //실제 보내는 리스트와 대기 리스트가 따로 존재함 
 
             while (_sendQueue.Count > 0) // send큐가 빌떄까지
@@ -120,10 +132,18 @@ namespace ServerCore
                 _pendingList.Add(buff);
             }
             sendArgs.BufferList = _pendingList; //대기 리스트의 목록을 실제 송신 리스트에 올림
+            try
+            {
+                bool pending = _socket.SendAsync(sendArgs);
+                if (!pending)
+                    OnSendCompleted(null, sendArgs);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"RegisterSend Failed {ex}");
+            }
 
-            bool pending = _socket.SendAsync(sendArgs);
-            if (!pending)
-                OnSendCompleted(null, sendArgs);
+           
         }
 
         void OnSendCompleted(object sender, SocketAsyncEventArgs args)
@@ -157,13 +177,24 @@ namespace ServerCore
 
         void RegisterRecv()
         {
+            if (_disconnected == 1) return;
+
             _recvBuffer.Clean(); // 혹시라도 커서가 너무 뒤로 이동하는 것 방지 
             ArraySegment<byte> segment = _recvBuffer.WriteSegment; //Recv에 사용할 segent
             recvArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);  // 이만큼 사용가능 
 
-            bool pending = _socket.ReceiveAsync(recvArgs);
-            if (!pending)
-                OnRecvCompleted(null, recvArgs);
+            try
+            {
+                bool pending = _socket.ReceiveAsync(recvArgs);
+                if (!pending)
+                    OnRecvCompleted(null, recvArgs);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+           
         }   
 
         void OnRecvCompleted(object sender, SocketAsyncEventArgs args)
