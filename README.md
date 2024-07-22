@@ -16,3 +16,5 @@ https://pinnate-windshield-475.notion.site/7-18-eb8853672c2b47d68db9bbf9fd673a90
 https://pinnate-windshield-475.notion.site/7-15-6a92feb9b59d44a2a6a0095f63e9a994?pvs=4
 
 ### Room의 개념 + 브로드캐스팅 / 세션 매니저를 이용한 세션 발급 
+
+https://notch-spleen-716.notion.site/7-22-dd62190f4a38442ba4ad606a19650d5b?pvs=4
