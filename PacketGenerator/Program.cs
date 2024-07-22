@@ -10,6 +10,8 @@ namespace PacketGenerator
         static ushort packetId;
         static string packetEnum;
 
+        static string managerRegister;
+
         static void Main(string[] args)
         {
             string pdlPath = "../PDL.xml";
@@ -37,6 +39,8 @@ namespace PacketGenerator
 
                 string fileText= string.Format(PacketFormat.fileFormat, packetEnum, genPackets);
                 File.WriteAllText("GenPackets.cs", fileText);
+                string managerText = string.Format(PacketFormat.managerFormat, managerRegister);
+                File.WriteAllText("PacketManager.cs", managerText);
             }
         }
 
@@ -57,6 +61,7 @@ namespace PacketGenerator
             Tuple<string,string,string> t= ParseMember(r); //멤버 하나하나 파싱
             genPackets += string.Format(PacketFormat.packetFormat, packetName, t.Item1, t.Item2, t.Item3);
             packetEnum += string.Format(PacketFormat.packetEnumFormat, packetName, ++packetId) + Environment.NewLine+"\t";
+            managerRegister += string.Format(PacketFormat.managerRegisterFormat, packetName)+ Environment.NewLine;
         }
 
         // {1} 멤버변수
