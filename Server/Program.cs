@@ -25,7 +25,7 @@ namespace Server
 
 
 
-            _listenr.Init(endPoint, () => { return new ClientSession(); });
+            _listenr.Init(endPoint, () => { return SessionManager.Instance.Generate(); });
             Console.WriteLine("Listening");
 
             while (true)
