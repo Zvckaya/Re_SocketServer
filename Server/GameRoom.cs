@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ServerCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,10 +8,18 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    class GameRoom
+    class GameRoom : IJobQueue
     {
         List<ClientSession> _sessions = new List<ClientSession>();
-        object _lock = new object();
+
+        JobQueue _jobQueue = new JobQueue();
+
+        public void Push(Action job)
+        {
+            _jobQueue.Push(job);
+        }
+
+
 
         public void BroadCast(ClientSession clientSession, string chat)
         {
@@ -20,33 +29,31 @@ namespace Server
             ArraySegment<byte> segment = packet.Write();
             //멀티 스레드 영역 진입 
 
-            lock (_lock)
+
+            foreach (ClientSession session in _sessions)
             {
-                foreach (ClientSession session in _sessions)
-                {
-                    session.Send(segment);
-                }
+                session.Send(segment);
             }
+
 
         }
 
         public void Enter(ClientSession session)
         {
-            lock (_lock)
-            {
-                _sessions.Add(session);
-                session.room = this;
-            }
+
+            _sessions.Add(session);
+            session.room = this;
+
 
         }
 
-        public void Leave(ClientSession session) {
-            lock (_lock)
-            {
-                _sessions.Remove(session);
-            }
+        public void Leave(ClientSession session)
+        {
+
+            _sessions.Remove(session);
+
         }
 
-        
+
     }
 }

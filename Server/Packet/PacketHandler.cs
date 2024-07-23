@@ -23,7 +23,8 @@ class PacketHandler
 
         if (clientSession.room == null)
             return;
-
-        clientSession.room.BroadCast(clientSession,chatPacket.chat);
+        clientSession.room.Push(() => clientSession.room.BroadCast(clientSession, chatPacket.chat));
+        //JobQueu 사용 
+        //clientSession.room.BroadCast(clientSession,chatPacket.chat);
     }
 }

@@ -19,7 +19,7 @@ namespace Server
             Console.WriteLine($"[OnConnected]:{endPoint.ToString()}");
 
             // 원래는 클라이언트 리소스 로딩 완료시 입장해야함.
-            Program.Room.Enter(this);
+            Program.Room.Push(() => Program.Room.Enter(this));
 
         }
 
@@ -28,7 +28,7 @@ namespace Server
             SessionManager.Instance.Remove(this);
             if(room != null)
             {
-                room.Leave(this);
+                Program.Room.Push(() => Program.Room.Leave(this));
                 room = null;
             }
             Console.WriteLine($"[Disconnect] {endPoint.ToString()}");
