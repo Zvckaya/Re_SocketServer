@@ -12,7 +12,7 @@ namespace PacketGenerator
         // {0} 패킷 등록
         public static string managerFormat =
 @"using ServerCore;
-class PacketManager
+public class PacketManager
 {{
     #region Singleton
     static PacketManager _instance = new PacketManager();
