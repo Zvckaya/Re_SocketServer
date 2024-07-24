@@ -28,8 +28,9 @@ namespace Server
             SessionManager.Instance.Remove(this);
             if(room != null)
             {
-                Program.Room.Push(() => Program.Room.Leave(this));
-                room = null;
+                GameRoom Room = room;
+                Room.Push(() => Program.Room.Leave(this));
+                room=null; 
             }
             Console.WriteLine($"[Disconnect] {endPoint.ToString()}");
         }

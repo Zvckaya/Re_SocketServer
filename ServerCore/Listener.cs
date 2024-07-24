@@ -13,7 +13,7 @@ namespace ServerCore
         Socket _listenSocket;
         Func<Session> _sessionFactory;
 
-        public void Init(IPEndPoint endpoint, Func<Session> sessionFactory) // <Session>을 인자로 받는 Func형식 
+        public void Init(IPEndPoint endpoint, Func<Session> sessionFactory,int register = 10, int backlog=100) // <Session>을 인자로 받는 Func형식 
         {
             _listenSocket = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _sessionFactory += sessionFactory;
@@ -21,14 +21,20 @@ namespace ServerCore
             _listenSocket.Bind(endpoint);
 
 
-            //backlog - 최대 대기 수 
-            _listenSocket.Listen(10);
+            //backlog - 최대 대기 수 (접속 시)
+            _listenSocket.Listen(backlog); 
 
 
-            //아래의 SocketAsyncEventArgs를 늘리면 처리할 수 있는 이벤트가 늘어남
-            SocketAsyncEventArgs e = new SocketAsyncEventArgs();
-            e.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted); // 소켓 비동기 이벤트가 완료되면 즉 accept 되면 
-            RegisterAccept(e);  //맨 최초로 acceptasync에 대한 control flow를 등록해준다. 
+
+            for(int i=0; i < register; i++)
+            {
+                //아래의 SocketAsyncEventArgs를 늘리면 처리할 수 있는 이벤트가 늘어남
+                SocketAsyncEventArgs e = new SocketAsyncEventArgs();
+                e.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted); // 소켓 비동기 이벤트가 완료되면 즉 accept 되면 
+                RegisterAccept(e);  //맨 최초로 acceptasync에 대한 control flow를 등록해준다. 
+
+            }
+            
 
         }
 
