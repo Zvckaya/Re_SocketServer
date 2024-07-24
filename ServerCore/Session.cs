@@ -93,6 +93,23 @@ namespace ServerCore
             RegisterRecv(); //첫 등록은 수동으로 해주어야함 
         }
 
+        public void Send(List<ArraySegment<byte>> sendBuff) //매번 송신할때마다 비동기적으로 호출할 것인가?
+        {
+            if (sendBuff.Count == 0)
+                return;
+
+            lock (_lock) // Send를 동시 호출할 수도 있어서
+            {
+                foreach (ArraySegment<byte> buffer in sendBuff)
+                    _sendQueue.Enqueue(buffer);
+
+                if (_pendingList.Count == 0) //만약 송신 대기가 없으면?
+                    RegisterSend();
+            }
+
+        }
+
+
         public void Send(ArraySegment<byte> sendBuff) //매번 송신할때마다 비동기적으로 호출할 것인가?
         {
             lock (_lock) // Send를 동시 호출할 수도 있어서

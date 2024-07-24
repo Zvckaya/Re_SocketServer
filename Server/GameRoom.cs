@@ -11,8 +11,8 @@ namespace Server
     class GameRoom : IJobQueue
     {
         List<ClientSession> _sessions = new List<ClientSession>();
-
         JobQueue _jobQueue = new JobQueue();
+        List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>(); 
 
         public void Push(Action job)
         {
@@ -28,12 +28,7 @@ namespace Server
             packet.chat = $" {chat} I am {packet.playerId}";
             ArraySegment<byte> segment = packet.Write();
             //멀티 스레드 영역 진입 
-
-
-            foreach (ClientSession session in _sessions)
-            {
-                session.Send(segment);
-            }
+            _pendingList.Add(segment); // 펜딩 리스트에 추가 
 
 
         }
@@ -54,6 +49,12 @@ namespace Server
 
         }
 
-
+        public void Flush()
+        {
+            foreach(ClientSession s in _sessions)
+            {
+                s.Send(_pendingList);
+            }
+        }
     }
 }
