@@ -23,13 +23,13 @@ namespace Server
 
         public void BroadCast(ClientSession clientSession, string chat)
         {
-            S_Chat packet = new S_Chat();
-            packet.playerId = clientSession.SessionId;
-            packet.chat = $" {chat} I am {packet.playerId}";
-            ArraySegment<byte> segment = packet.Write();
-            Console.WriteLine(chat);
-            //멀티 스레드 영역 진입 
-            _pendingList.Add(segment); // 펜딩 리스트에 추가 
+            //S_Chat packet = new S_Chat();
+            //packet.playerId = clientSession.SessionId;
+            //packet.chat = $" {chat} I am {packet.playerId}";
+            //ArraySegment<byte> segment = packet.Write();
+            //Console.WriteLine(chat);
+            ////멀티 스레드 영역 진입 
+            //_pendingList.Add(segment); // 펜딩 리스트에 추가 
 
 
         }
@@ -40,6 +40,17 @@ namespace Server
             _sessions.Add(session);
             session.room = this;
 
+            S_PlayerList players = new S_PlayerList();
+            foreach (ClientSession s in _sessions) {
+                players.players.Add(new S_PlayerList.Player()
+                {
+                    isSelf = (s == session),
+                    playerId = s.SessionId,
+                    posX = s.PosX,
+                    posY = s.PosY,
+                    posZ = s.PosZ,
+                }); 
+            }
 
         }
 

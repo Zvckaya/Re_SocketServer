@@ -31,7 +31,7 @@ public interface IPacket
 }
 
 
-class S_BroadcastEnterGame : IPacket
+public class S_BroadcastEnterGame : IPacket
 {
      public int playerId;
 
@@ -98,7 +98,7 @@ count += sizeof(float);
     }
 }
 
-class C_LeaveGame : IPacket
+public class C_LeaveGame : IPacket
 {
      public int playerId;
 
@@ -141,7 +141,7 @@ count += sizeof(int);
     }
 }
 
-class S_BroadcastLeaveGame : IPacket
+public class S_BroadcastLeaveGame : IPacket
 {
      public int playerId;
 
@@ -184,7 +184,7 @@ count += sizeof(int);
     }
 }
 
-class S_PlayerList : IPacket
+public class S_PlayerList : IPacket
 {
     
 public struct Player
@@ -293,7 +293,7 @@ foreach(Player player in players)
     }
 }
 
-class C_Move : IPacket
+public class C_Move : IPacket
 {
      public float posX;
 
@@ -352,7 +352,7 @@ count += sizeof(float);
     }
 }
 
-class S_BroadcastMove : IPacket
+public class S_BroadcastMove : IPacket
 {
      public int playerId;
 

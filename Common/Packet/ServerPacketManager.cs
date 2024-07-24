@@ -1,5 +1,5 @@
 using ServerCore;
-class PacketManager
+public class PacketManager
 {
     #region Singleton
     static PacketManager _instance = new PacketManager();
