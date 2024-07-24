@@ -27,6 +27,7 @@ namespace Server
             packet.playerId = clientSession.SessionId;
             packet.chat = $" {chat} I am {packet.playerId}";
             ArraySegment<byte> segment = packet.Write();
+            Console.WriteLine(chat);
             //멀티 스레드 영역 진입 
             _pendingList.Add(segment); // 펜딩 리스트에 추가 
 
