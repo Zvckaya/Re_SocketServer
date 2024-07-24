@@ -21,17 +21,9 @@ namespace Server
 
 
 
-        public void BroadCast(ClientSession clientSession, string chat)
+        public void BroadCast(ArraySegment<byte> segment)
         {
-            //S_Chat packet = new S_Chat();
-            //packet.playerId = clientSession.SessionId;
-            //packet.chat = $" {chat} I am {packet.playerId}";
-            //ArraySegment<byte> segment = packet.Write();
-            //Console.WriteLine(chat);
-            ////멀티 스레드 영역 진입 
-            //_pendingList.Add(segment); // 펜딩 리스트에 추가 
-
-
+           _pendingList.Add(segment);
         }
 
         public void Enter(ClientSession session)
@@ -40,6 +32,7 @@ namespace Server
             _sessions.Add(session);
             session.room = this;
 
+            // 입장시 원래 플레이어 목록 수신 
             S_PlayerList players = new S_PlayerList();
             foreach (ClientSession s in _sessions) {
                 players.players.Add(new S_PlayerList.Player()
@@ -51,7 +44,14 @@ namespace Server
                     posZ = s.PosZ,
                 }); 
             }
+            session.Send(players.Write());
 
+            S_BroadcastEnterGame enter = new S_BroadcastEnterGame();
+            enter.playerId = session.SessionId;
+            enter.posX = 0;
+            enter.posY = 0;
+            enter.posZ = 0;
+            BroadCast(enter.Write());
         }
 
         public void Leave(ClientSession session)
