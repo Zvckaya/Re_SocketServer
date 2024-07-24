@@ -55,6 +55,9 @@ namespace Server
             {
                 s.Send(_pendingList);
             }
+
+            Console.WriteLine($"Flushed {_pendingList.Count} items");
+            _pendingList.Clear();
         }
     }
 }

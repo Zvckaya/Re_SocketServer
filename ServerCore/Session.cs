@@ -16,6 +16,8 @@ namespace ServerCore
         public sealed override int OnRecv(ArraySegment<byte> buffer) //seal를 통해 재 override를 제한함
         {
             int processLen = 0; //몇 byte 처리했는가?
+            int packetCount = 0;
+
             while (true)
             {
                 //최소한 헤더는 파싱할 수 있는가? 
@@ -39,10 +41,15 @@ namespace ServerCore
                 //여기 도달했으면 패킷 조립가능 
                 OnRecvPacket(new ArraySegment<byte>(buffer.Array,buffer.Offset,dataSize));//파싱한 패킷 전체를 전달->스택에 복사
                 //Console.WriteLine(" 패킷 전달 ");
+                packetCount++;
 
                 processLen += dataSize;
                 buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize); //다음 부분을 선택 
             }
+
+            if(packetCount>1)
+                Console.WriteLine($"패킷 모아보내기: {packetCount}");
+
             return processLen;
         }
 
@@ -54,7 +61,7 @@ namespace ServerCore
         Socket _socket;
         int _disconnected = 0;
 
-        RecvBuffer _recvBuffer = new RecvBuffer(1024); //Recv 버퍼사용 
+        RecvBuffer _recvBuffer = new RecvBuffer(65535); //Recv 버퍼사용 
 
         object _lock = new object();
         Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
