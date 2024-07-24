@@ -1,22 +1,25 @@
 using ServerCore;
-
 class PacketManager
 {
     #region Singleton
-    static PacketManager _instance;
+    static PacketManager _instance = new PacketManager();
     public static PacketManager Instance
     {
         get
         {
-            if (_instance == null)
-                _instance = new PacketManager();
+   
             return _instance;
         }
     }
     #endregion
 
-    Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>> _onRecv =
-        new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>>();
+    PacketManager()
+    {
+        Register();
+    }
+
+    Dictionary<ushort, Func<PacketSession, ArraySegment<byte>,IPacket>> _onRecv =
+        new Dictionary<ushort, Func<PacketSession, ArraySegment<byte>, IPacket>>();
 
     Dictionary<ushort, Action<PacketSession, IPacket>> _handler =
         new Dictionary<ushort, Action<PacketSession, IPacket>>();
@@ -30,7 +33,7 @@ class PacketManager
     }
 
 
-    public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)
+    public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer,Action<PacketSession,IPacket> onRecvCallBack = null)
     {
         ushort count = 0;
 
@@ -39,20 +42,28 @@ class PacketManager
         ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count);
         count += 2;
 
-        Action<PacketSession, ArraySegment<byte>> action = null;
-        if (_onRecv.TryGetValue(id, out action))
+        Func<PacketSession, ArraySegment<byte>,IPacket> func = null;
+        if (_onRecv.TryGetValue(id, out func))
         {
-            action.Invoke(session, buffer);
+            IPacket packet = func.Invoke(session, buffer); 
+            if (onRecvCallBack != null)
+                onRecvCallBack.Invoke(session, packet); 
+            else
+                HandlePacket(session, packet);
         }
     }
 
-    void MakePacket<T>(PacketSession session, ArraySegment<byte> buffer) where T : IPacket, new() //패킷 클래스를 넘겨 등록 
+    T MakePacket<T>(PacketSession session, ArraySegment<byte> buffer) where T : IPacket, new() 
     {
         T p = new T();
         p.Read(buffer);
+        return p;
+    }
 
+    public void HandlePacket(PacketSession session,IPacket p)
+    {
         Action<PacketSession, IPacket> action = null;
-        if(_handler.TryGetValue(p.Protocol,out action))
+        if (_handler.TryGetValue(p.Protocol, out action))
         {
             action.Invoke(session, p);
         }
