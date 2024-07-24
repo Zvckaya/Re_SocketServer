@@ -123,7 +123,7 @@ public interface IPacket
 
         public static string packetFormat =
 @"
-class {0} : IPacket
+public class {0} : IPacket
 {{
     {1}
 
