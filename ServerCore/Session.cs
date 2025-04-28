@@ -11,6 +11,8 @@ namespace ServerCore
     public abstract class PacketSession : Session
     {
         public static readonly int HeaderSize = 2;
+   
+        public static readonly int MaxPacketSize = 4096;
         //[size(2)][packetId(2)][.....] <- 이 패킷의 모습이 될것이다.
 
         public sealed override int OnRecv(ArraySegment<byte> buffer) //seal를 통해 재 override를 제한함
@@ -30,6 +32,14 @@ namespace ServerCore
 
                 //패킷이 완전체로 도착했는가? 
                 ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
+
+                if(dataSize < HeaderSize || dataSize> MaxPacketSize)
+                {
+                    Console.WriteLine($"[Warning] Invalid packet size: {dataSize}");
+                    Disconnect();
+                    return 0;
+                }
+
                 // Console.WriteLine($"dataSize:{dataSize}");
                 if (buffer.Count < dataSize)
                 {
@@ -133,12 +143,23 @@ namespace ServerCore
             if (Interlocked.Exchange(ref _disconnected, 1) == 1) // Interlocked.Exchange 은 교환전의 숫자를 밷어줌 
                 return;
 
-            OnDisconnected(_socket.RemoteEndPoint);
-            _socket.Shutdown(SocketShutdown.Both);
-            _socket.Close();
-            Clear();
+            SafeExit(() => OnDisconnected(_socket.RemoteEndPoint), "OnDisconnected");
+            SafeExit(() => _socket.Shutdown(SocketShutdown.Both), "Socket shutdown");
+            SafeExit(() => _socket.Close(), "Socket Close");
+            SafeExit(() => Clear(), "Clear");
         }
 
+        void SafeExit(Action action, string context)
+        {
+            try
+            {
+                action.Invoke();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Safe Exit] {context}");
+            }
+        }
 
 
         #region 네트워크 통신(외부통신)
