@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ServerCore
 {
-    public abstract class PacketSession: Session
+    public abstract class PacketSession : Session
     {
         public static readonly int HeaderSize = 2;
         //[size(2)][packetId(2)][.....] <- 이 패킷의 모습이 될것이다.
@@ -26,20 +26,20 @@ namespace ServerCore
                     //Console.WriteLine($"해설할 패킷 없음{buffer.Count}");
                     break;
                 }
-                
+
 
                 //패킷이 완전체로 도착했는가? 
                 ushort dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
-               // Console.WriteLine($"dataSize:{dataSize}");
+                // Console.WriteLine($"dataSize:{dataSize}");
                 if (buffer.Count < dataSize)
                 {
                     Console.WriteLine("데이터 사이즈 이상");
                     break;
                 }
-             
+
 
                 //여기 도달했으면 패킷 조립가능 
-                OnRecvPacket(new ArraySegment<byte>(buffer.Array,buffer.Offset,dataSize));//파싱한 패킷 전체를 전달->스택에 복사
+                OnRecvPacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));//파싱한 패킷 전체를 전달->스택에 복사
                 //Console.WriteLine(" 패킷 전달 ");
                 packetCount++;
 
@@ -47,7 +47,7 @@ namespace ServerCore
                 buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize); //다음 부분을 선택 
             }
 
-            if(packetCount>1)
+            if (packetCount > 1)
                 Console.WriteLine($"패킷 모아보내기: {packetCount}");
 
             return processLen;
@@ -147,7 +147,7 @@ namespace ServerCore
         {
             if (_disconnected == 1)
                 return;
-            
+
             //실제 보내는 리스트와 대기 리스트가 따로 존재함 
 
             while (_sendQueue.Count > 0) // send큐가 빌떄까지
@@ -167,35 +167,46 @@ namespace ServerCore
                 Console.WriteLine($"RegisterSend Failed {ex}");
             }
 
-           
+
         }
 
         void OnSendCompleted(object sender, SocketAsyncEventArgs args)
         {
-            lock (_lock)  // 콜백형식으로 OnSendCompleted 
+
+            bool registerSend = false;
+
+
+            if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
             {
-                if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
+                try
                 {
-                    try
+                    lock (_lock)
                     {
                         sendArgs.BufferList = null;
                         _pendingList.Clear(); //대기 목록을 초기화함 
-                        OnSend(args.BytesTransferred);
-
                         if (_sendQueue.Count != 0) //검사를 해야하는 이유->pending이 걸려있는 상태에서 단순 데이터 삽입만 될 수 있기 때문
-                            RegisterSend();  // pendingList.Clear를 했다
+                            registerSend = true;
+                    }
 
-                    }
-                    catch (Exception ex)
+                    OnSend(args.BytesTransferred);
+
+                    if (registerSend)
                     {
-                        Console.WriteLine(ex.ToString());
+                        RegisterSend();
                     }
+
+
                 }
-                else
+                catch (Exception ex)
                 {
-                    Disconnect();
+                    Console.WriteLine(ex.ToString());
                 }
             }
+            else
+            {
+                Disconnect();
+            }
+
 
         }
 
@@ -218,8 +229,8 @@ namespace ServerCore
                 Console.WriteLine(ex.ToString());
             }
 
-           
-        }   
+
+        }
 
         void OnRecvCompleted(object sender, SocketAsyncEventArgs args)
         {
@@ -236,7 +247,7 @@ namespace ServerCore
 
                     //컨텐츠쪽으로 데이터를 넘긴 후 얼마나 처리했는지 받는다. 
                     int processLen = OnRecv(_recvBuffer.ReadSegment);  // ->OnRecv는 컨텐츠에서 OnRecv 핸들링을 해주기 위해 사용됨 
-                    if(processLen < 0 || _recvBuffer.DataSzie < processLen)
+                    if (processLen < 0 || _recvBuffer.DataSzie < processLen)
                     {
                         Disconnect();
                         return;
