@@ -39,11 +39,19 @@ namespace ServerCore
         {
             while (true)
             {
-                Action action = Pop();
-                if (action == null)
-                    return;
+                Action job = null;
 
-                action.Invoke();
+                lock (_lock)
+                {
+                    if(_jobQueue.Count == 0)
+                    {
+                        _flush = false;
+                        return;
+                    }
+                    job = _jobQueue.Dequeue();
+                }
+
+                job?.Invoke();
             }
         }
 
