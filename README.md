@@ -1,5 +1,6 @@
 # 제로부터 시작하는 C# 소켓서버개발 
 
+## 개발 정리 문서
 ### 블록vs논블록/ SocketAsyncEventArgs/ Delegate vs Action vs Func 
 https://spiny-venom-914.notion.site/7-1-42f55a059de4413fa18091ed4efd2f57?pvs=4
 
@@ -22,3 +23,6 @@ https://notch-spleen-716.notion.site/7-22-dd62190f4a38442ba4ad606a19650d5b?pvs=4
 ### 패킷모아보내기 / JobTimer 
 
 https://notch-spleen-716.notion.site/7-24-ac3459244458423b90c9e5f64769341c?pvs=4
+
+## 기존 문제점 분석 및 개선 
+https://loud-carver-b46.notion.site/1e3ec30868ee80e4a064ff7ac015877c?pvs=4
