@@ -3,7 +3,7 @@ using ServerCore;
 using System;
 using System.Collections.Generic;
 
-namespace ChatServer
+namespace ChatServer.Session
 {
     class SessionManager : IJobQueue
     {

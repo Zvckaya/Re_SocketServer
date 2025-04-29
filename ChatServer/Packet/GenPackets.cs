@@ -3,7 +3,7 @@ using ServerCore;
 using System;
 using System.Text;
 
-namespace ChatServer
+namespace ChatServer.Packet
 {
     public enum PacketID
     {

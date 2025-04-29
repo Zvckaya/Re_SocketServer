@@ -1,4 +1,6 @@
 ﻿// ChatRoom.cs
+using ChatServer.Packet;
+using ChatServer.Session;
 using ServerCore;
 using System;
 using System.Collections.Generic;

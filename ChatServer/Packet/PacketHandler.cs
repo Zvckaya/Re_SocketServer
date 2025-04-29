@@ -1,11 +1,12 @@
-﻿using ServerCore;
+﻿using ChatServer.Session;
+using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatServer
+namespace ChatServer.Packet
 {
     class PacketHandler
     {
