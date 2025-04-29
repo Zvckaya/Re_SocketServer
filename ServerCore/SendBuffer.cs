@@ -12,13 +12,18 @@ namespace ServerCore
 
         public static int ChunkSize { get; set; } = 65535*100; //청크사이즈는 조절이 가능하다.
 
+        static Stack<SendBuffer> _bufferPool = new Stack<SendBuffer>();
+        static object _lock = new object();
+
         public static ArraySegment<byte> Open(int reserverSize)
         {
-            if (CurrentBuffer.Value == null) // 한번도 사용하지 않음
-                CurrentBuffer.Value = new SendBuffer(ChunkSize);
-
-            if (CurrentBuffer.Value.FreeSize < reserverSize)
-                CurrentBuffer.Value = new SendBuffer(ChunkSize);
+            lock (_lock)
+            {
+                if (_bufferPool.Count > 0)
+                    CurrentBuffer.Value = _bufferPool.Pop();
+                else
+                    CurrentBuffer.Value = new SendBuffer(ChunkSize);
+            }
 
             return CurrentBuffer.Value.Open(reserverSize);
             
@@ -26,7 +31,17 @@ namespace ServerCore
 
         public static ArraySegment<byte> Close(int usedSize)
         {
-            return CurrentBuffer.Value.Close(usedSize);
+            ArraySegment<byte> segment = CurrentBuffer.Value.Close(usedSize);
+
+            if (CurrentBuffer.Value.FreeSize == 0) // 다쓰면 반난 
+            {
+                lock (_lock)
+                {
+                    _bufferPool.Push(CurrentBuffer.Value);
+                    CurrentBuffer.Value = null;
+                }
+            }
+            return segment;
         }
             
 
