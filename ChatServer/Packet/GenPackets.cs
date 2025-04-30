@@ -49,9 +49,10 @@ namespace ChatServer.Packet
             ushort msgLen = (ushort)Encoding.UTF8.GetByteCount(message);
             success &= BitConverter.TryWriteBytes(s.Slice(count), msgLen);
             count += sizeof(ushort);
-            success &= Encoding.UTF8.GetBytes(message, s.Slice(count));
-            count += msgLen;
 
+            int byteLen = Encoding.UTF8.GetBytes(message, s.Slice(count));
+            count += (ushort)byteLen;
+            
             success &= BitConverter.TryWriteBytes(s, count);
             return SendBufferHelper.Close(count);
         }
