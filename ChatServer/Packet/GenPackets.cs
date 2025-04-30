@@ -79,22 +79,20 @@ namespace ChatServer.Packet
         {
             ArraySegment<byte> segment = SendBufferHelper.Open(4096);
             ushort count = 0;
-
             Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
 
-            count += sizeof(ushort); // 패킷 전체 길이
-            BitConverter.TryWriteBytes(s.Slice(count), (ushort)PacketID.C_Chat);
-            count += sizeof(ushort); // 패킷 ID
+            count += sizeof(ushort);                                   // [size] 자리 비워두기
+            BitConverter.TryWriteBytes(s.Slice(count), (ushort)PacketID.S_Chat);
+            count += sizeof(ushort);                                   // [id]
 
             ushort msgLen = (ushort)Encoding.UTF8.GetByteCount(message);
             BitConverter.TryWriteBytes(s.Slice(count), msgLen);
-            count += sizeof(ushort); // 문자열 길이
+            count += sizeof(ushort);                                   // [strlen]
 
-            int byteCount = Encoding.UTF8.GetBytes(message, s.Slice(count));
-            count += (ushort)byteCount; // 실제 메시지
+            int byteCnt = Encoding.UTF8.GetBytes(message, s.Slice(count));
+            count += (ushort)byteCnt;                                  // [string]
 
-            BitConverter.TryWriteBytes(s, count); // 최종 전체 패킷 길이 입력
-
+            BitConverter.TryWriteBytes(s, count);                      // size 필드 마무리
             return SendBufferHelper.Close(count);
         }
 

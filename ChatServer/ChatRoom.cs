@@ -20,6 +20,11 @@ namespace ChatServer
 
         public void Broadcast(ArraySegment<byte> segment)
         {
+            // 디버그용: PacketSession 파서 재사용
+            S_Chat pkt = new S_Chat();
+            pkt.Read(segment);
+            Console.WriteLine($"[Broadcast] {pkt.message}");
+
             _pendingList.Add(segment);
         }
 
